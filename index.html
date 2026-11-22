@@ -184,11 +184,13 @@ async function cargar() {
 // --- Ubicación (si se deniega, se ficha igual y queda sin ubicación) ---
 function obtenerUbicacion() {
   return new Promise((resolver) => {
-    if (!navigator.geolocation) return resolver(null);
+    if (!navigator.geolocation) return resolver({ error: "este navegador no permite ubicación" });
     navigator.geolocation.getCurrentPosition(
       (p) => resolver({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy }),
-      () => resolver(null),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      (e) => resolver({ error: e.code === 1 ? "permiso de ubicación denegado"
+                              : e.code === 3 ? "la ubicación tardó demasiado"
+                              : "no se pudo obtener la ubicación" }),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   });
 }
@@ -205,7 +207,8 @@ async function fichar(tipo) {
 
   document.querySelectorAll("button[data-tipo]").forEach((b) => (b.disabled = true));
   avisar("Obteniendo ubicación…");
-  const ub = await obtenerUbicacion();
+  const res = await obtenerUbicacion();
+  const ub = res.error ? null : res;
   avisar("Registrando…");
 
   try {
@@ -215,7 +218,7 @@ async function fichar(tipo) {
     });
     if (r.ok) {
       $("pin").value = "";
-      avisar(`${NOMBRES[tipo]} registrada a las ${hora(r.momento)}` + (ub ? "." : " (sin ubicación)."), "ok");
+      avisar(`${NOMBRES[tipo]} registrada a las ${hora(r.momento)}` + (ub ? " con ubicación." : " (sin ubicación: " + res.error + ")."), "ok");
     } else {
       avisar(r.error, "error");
     }
