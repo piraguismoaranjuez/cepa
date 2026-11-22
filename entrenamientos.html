@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Entrenamientos · CEPA</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CEPA">
+<link rel="apple-touch-icon" href="icono-180.png">
+<meta name="theme-color" content="#0b6e99">
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--tx:#17202a;--mut:#64707d;--pri:#0b6e99;--pri-s:#e4f1f7;--ko:#b42318;--ko-s:#fdecea;--bd:#e2e6ea}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1318;--card:#18202a;--tx:#e6ebf0;--mut:#9aa5b1;--pri:#47aedb;--pri-s:#15303d;--ko:#f08a80;--ko-s:#3a1d1b;--bd:#28323e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{position:sticky;top:0;z-index:5;background:var(--pri);color:#fff;padding:12px 16px 0}
+.top h1{font-size:18px;margin:0 0 8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top select{width:100%;padding:10px;border-radius:10px;border:0;background:rgba(255,255,255,.2);color:#fff;margin-bottom:8px}
+.top select option{color:#000}
+.gname{margin-bottom:8px;opacity:.9}
+.tabs{display:flex}
+.tabs button{flex:1;padding:12px;background:none;border:0;color:rgba(255,255,255,.75);border-bottom:3px solid transparent;font-weight:600}
+.tabs button.on{color:#fff;border-color:#fff}
+main{padding:12px 16px 110px;max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.card.off{opacity:.6}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mut{color:var(--mut);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:0;background:var(--pri-s);color:var(--tx);border-radius:999px;padding:7px 11px;font-size:14px}
+.acts{display:flex;gap:8px}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:600;background:var(--pri);color:#fff;min-height:46px;cursor:pointer}
+.btn.sec{background:var(--pri-s);color:var(--tx)}
+.btn.ko{background:var(--ko-s);color:var(--ko)}
+.btn.full{width:100%}
+.btn.mini{min-height:36px;padding:7px 12px;font-size:14px}
+.btn:disabled{opacity:.45}
+.in{width:100%;padding:12px;border:1px solid var(--bd);border-radius:12px;background:var(--card);margin:6px 0 12px}
+label{font-size:14px;color:var(--mut)}
+.fab{position:fixed;right:16px;bottom:22px;border-radius:999px;padding:16px 22px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:640px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px 24px;max-height:90vh;overflow:auto}
+.sheet h2{margin:0 0 12px;font-size:18px}
+.opt{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:6px;cursor:pointer}
+.opt.sel{border-color:var(--pri);box-shadow:0 0 0 2px var(--pri)}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg .btn{flex:1}
+.aviso{background:var(--ko-s);color:var(--ko);border-radius:10px;padding:10px;font-size:14px;margin-bottom:12px}
+.info{background:var(--pri-s);border-radius:10px;padding:10px;font-size:14px;margin-bottom:12px}
+.hidden{display:none!important}
+.toast{position:fixed;left:16px;right:16px;bottom:96px;background:#222;color:#fff;padding:10px 12px 10px 16px;border-radius:12px;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:608px;margin:0 auto}
+.toast button{background:none;border:0;color:#7fd3f7;font-weight:700;padding:8px 6px;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;font-size:14px}
+.login{max-width:420px;margin:12vh auto 0;padding:0 16px}
+.empty{text-align:center;color:var(--mut);padding:40px 0}
+.linkbtn{background:none;border:0;color:#fff;font-size:14px;text-decoration:underline;cursor:pointer}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--pri-s);color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Cargando…</div></div>
+<div id="modal" class="modal hidden"><div class="sheet" id="sheet"></div></div>
+<div id="toast" class="toast hidden"><span id="toastTxt"></span><button id="toastBtn" class="hidden">Deshacer</button></div>
+
+<script>
+const S = { token:null, ent:null, grupos:[], motivos:{alta:[],baja:[]}, grupo:null, miembros:[], historial:[], tab:'grupo', filtro:'', deshacerDias:30 };
+const ICON = { material:'🛶', espacio:'📍' };
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function guardar(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e){} }
+function cargar(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+
+// ====== CONFIGURACIÓN ======
+const ENTRENAMIENTOS_URL = "https://script.google.com/macros/s/TU_ID_ENTRENADORES/exec";
+// ===========================
+
+// Llama al Apps Script de Entrenadores. El primer argumento es siempre la sesión de CEPA.
+async function api(fn, token, ...args){
+  let r;
+  try { r = await fetch(ENTRENAMIENTOS_URL, { method: 'POST', body: JSON.stringify({ fn, sesion: token, args }) }); }
+  catch(e){ throw new Error('Sin conexión. Inténtalo de nuevo.'); }
+  if (!r.ok) throw new Error('No se ha podido conectar con el club (' + r.status + ')');
+  const j = await r.json();
+  if (!j.ok) {
+    if (String(j.error).indexOf('SESION') >= 0) { irInicio(); throw new Error('Tu sesión ha caducado. Vuelve a entrar.'); }
+    throw new Error(j.error);
+  }
+  return j.datos;
+}
+function irInicio(){ location.href = './'; }
+
+/* Aviso abajo. Si se pasa idRegistro, lleva un botón «Deshacer» durante 8 segundos. */
+function toast(t, idRegistro){
+  const el = $('toast'), b = $('toastBtn');
+  $('toastTxt').textContent = t;
+  el.classList.remove('hidden');
+  b.classList.toggle('hidden', !idRegistro);
+  b.disabled = false;
+  b.onclick = idRegistro ? () => { b.disabled = true; deshacerAccion(idRegistro); } : null;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.add('hidden'), idRegistro ? 8000 : 2800);
+}
+function abrir(html){ $('sheet').innerHTML = html; $('modal').classList.remove('hidden'); }
+function cerrar(){ $('modal').classList.add('hidden'); $('sheet').innerHTML = ''; }
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') cerrar(); });
+
+/* ---------- ACCESO: el de la app CEPA ---------- */
+function salir(){ irInicio(); }
+
+async function arrancar(){
+  $('app').innerHTML = '<div class="empty">Cargando…</div>';
+  try {
+    const r = await api('inicio', S.token);
+    S.ent = r.entrenador; S.grupos = r.grupos; S.motivos = r.motivos; S.deshacerDias = r.deshacerDias || 30;
+    const prev = cargar('grupo');
+    const g = S.grupos.find(x => x.id === prev) || S.grupos[0];
+    S.grupo = g ? g.id : null;
+    pintar();
+    if (S.grupo) recargar();
+  } catch(e){
+    $('app').innerHTML = `<div class="empty">${esc(e.message)}<br><br><button class="btn" onclick="arrancar()">Reintentar</button>
+      <br><br><button class="btn sec" onclick="irInicio()">Volver a CEPA</button></div>`;
+  }
+}
+
+/* ---------- PANTALLA PRINCIPAL ---------- */
+function pintar(){
+  const g = S.grupos;
+  $('app').innerHTML = `<div class="top">
+      <h1><button class="linkbtn" data-a="salir" style="text-decoration:none;font-size:16px">‹ CEPA</button><span>Entrenamientos</span><span style="width:52px"></span></h1>
+      ${g.length > 1 ? `<select id="selG">${g.map(x => `<option value="${esc(x.id)}" ${x.id === S.grupo ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select>`
+        : g.length ? `<div class="gname">${esc(g[0].nombre)}</div>` : ''}
+      <div class="tabs">
+        <button data-a="tab" data-t="grupo" class="${S.tab === 'grupo' ? 'on' : ''}">Mi grupo</button>
+        <button data-a="tab" data-t="historial" class="${S.tab === 'historial' ? 'on' : ''}">Historial</button>
+      </div></div>
+    <main id="main"></main>
+    ${S.grupo && S.tab === 'grupo' ? '<button class="btn fab" data-a="alta">+ Alta</button>' : ''}`;
+  if ($('selG')) $('selG').onchange = e => { S.grupo = e.target.value; guardar('grupo', S.grupo); S.filtro = ''; recargar(); };
+  pintarContenido();
+}
+
+async function recargar(){
+  if ($('main')) $('main').innerHTML = '<div class="empty">Cargando…</div>';
+  try {
+    if (S.tab === 'grupo') S.miembros = await api('datosGrupo', S.token, S.grupo);
+    else S.historial = await api('historial', S.token, S.grupo);
+    pintarContenido();
+  } catch(e){ toast(e.message); }
+}
+
+function pintarContenido(){
+  const m = $('main'); if (!m) return;
+  if (!S.grupo) { m.innerHTML = '<div class="empty">No tienes ningún grupo asignado. Habla con el club.</div>'; return; }
+  if (S.tab === 'historial') {
+    m.innerHTML = `<div class="info">Si te has equivocado, pulsa «Deshacer» en el movimiento. Se puede durante ${esc(S.deshacerDias)} días, mientras nada haya cambiado después.</div>` +
+      (S.historial.length ? S.historial.map(h => `<div class="card ${h.deshecho ? 'off' : ''}">
+        <div class="row"><b>${esc(h.accion)}</b><span class="mut">${esc(h.fecha)}</span></div>
+        <div>${esc(h.detalle)}</div>
+        <div class="row" style="margin-top:6px;align-items:center"><span class="mut">${esc(h.quien)}</span>
+          ${h.deshecho ? '<span class="tag">Deshecho</span>'
+            : h.puedeDeshacer ? `<button class="btn sec mini" data-a="deshacer" data-id="${esc(h.id)}" data-acc="${esc(h.accion)}" data-det="${esc(h.detalle)}">Deshacer</button>` : ''}
+        </div></div>`).join('')
+      : '<div class="empty">Sin movimientos todavía.</div>');
+    return;
+  }
+  m.innerHTML = `<input class="in" id="filtro" placeholder="Buscar en mi grupo (${S.miembros.length})" value="${esc(S.filtro)}"><div id="lista"></div>`;
+  $('filtro').oninput = e => { S.filtro = e.target.value; pintarLista(); };
+  pintarLista();
+}
+
+function pintarLista(){
+  const f = S.filtro.toLowerCase().trim();
+  const l = S.miembros.filter(x => !f || x.nombre.toLowerCase().includes(f));
+  $('lista').innerHTML = l.length ? l.map(tarjeta).join('')
+    : `<div class="empty">${S.miembros.length ? 'Nadie coincide con la búsqueda.' : 'Aún no hay deportistas. Pulsa “+ Alta”.'}</div>`;
+}
+
+function tarjeta(x){
+  const chips = x.asignaciones.length
+    ? `<div class="chips">${x.asignaciones.map(a => `<button class="chip" data-a="liberar" data-id="${esc(a.id)}" data-txt="${esc(a.texto)}" data-n="${esc(x.nombre)}">${ICON[a.tipo] || ''} ${esc(a.texto)}</button>`).join('')}</div>`
+    : '<div class="mut" style="margin:6px 0 10px">Sin material ni espacio asignado</div>';
+  return `<div class="card">
+    <div class="row"><b>${esc(x.nombre)}</b><span class="mut">desde ${esc(x.desde)}</span></div>
+    ${x.ficha ? `<div class="mut">${esc([x.ficha.fecha_nacimiento, x.ficha.sexo, x.ficha.modalidad].filter(Boolean).join(' · '))}</div>` : ''}
+    ${chips}
+    <div class="acts">
+      <button class="btn sec" style="flex:1" data-a="asignar" data-s="${esc(x.idSocio)}" data-n="${esc(x.nombre)}">Asignar</button>
+      ${x.ficha ? `<button class="btn sec" data-a="editar" data-s="${esc(x.idSocio)}">Editar</button>` : ''}
+      <button class="btn ko" data-a="baja" data-m="${esc(x.idMiembro)}" data-n="${esc(x.nombre)}">Baja</button>
+    </div></div>`;
+}
+
+/* ---------- ACCIONES ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const d = b.dataset;
+  switch (d.a) {
+    case 'salir': return salir();
+    case 'tab': S.tab = d.t; pintar(); return recargar();
+    case 'alta': return hojaAlta();
+    case 'baja': return hojaBaja(d.m, d.n);
+    case 'asignar': return hojaAsignar(d.s, d.n, 'material');
+    case 'editar': return hojaEditar(d.s);
+    case 'liberar': return hojaLiberar(d.id, d.txt, d.n);
+    case 'deshacer': return hojaDeshacer(d.id, d.acc, d.det);
+    case 'cerrar': return cerrar();
+  }
+});
+
+const selectMotivos = tipo => `<select id="mot" class="in"><option value="">Elige un motivo…</option>${S.motivos[tipo].map(m => `<option>${esc(m)}</option>`).join('')}</select>`;
+const cancelar = '<p><button class="btn sec full" data-a="cerrar">Cancelar</button></p>';
+
+/* Ejecuta una acción; si el servidor devuelve idRegistro, el aviso ofrece «Deshacer». */
+async function ejecutar(boton, fn, mensaje){
+  boton.disabled = true;
+  try { const r = await fn(); cerrar(); toast(mensaje, r && r.idRegistro); recargar(); }
+  catch(e){ toast(e.message); boton.disabled = false; }
+}
+
+async function deshacerAccion(idRegistro){
+  try {
+    const r = await api('deshacer', S.token, S.grupo, idRegistro);
+    cerrar();
+    toast('Deshecho' + (r && r.avisos && r.avisos.length ? ' (' + r.avisos.join('; ') + ')' : ''));
+    recargar();
+  } catch(e){ toast(e.message); }
+}
+
+function hojaDeshacer(idRegistro, accion, detalle){
+  abrir(`<h2>Deshacer</h2>
+    <p>¿Deshacer <b>${esc(accion)}</b>?</p><p class="mut">${esc(detalle)}</p>
+    <div class="info">Todo vuelve a como estaba antes de esta acción. Queda apuntado en el historial.</div>
+    <button class="btn full" id="ok">Sí, deshacer</button>${cancelar}`);
+  $('ok').onclick = () => { $('ok').disabled = true; deshacerAccion(idRegistro); };
+}
+
+function hojaAlta(){
+  let elegido = null, t;
+  abrir(`<h2>Dar de alta en el grupo</h2>
+    <label>Buscar socio (nombre o nº de socio)</label><input id="bus" class="in" placeholder="Escribe al menos 2 letras" autocomplete="off">
+    <div id="res"></div>
+    <p><button class="btn sec full" id="bNuevo">¿No aparece? Crear deportista nuevo</button></p>
+    <label>Motivo</label>${selectMotivos('alta')}
+    <label>Nota (opcional)</label><textarea id="nota" class="in" rows="2" maxlength="500"></textarea>
+    <button class="btn full" id="ok" disabled>Confirmar alta</button>${cancelar}`);
+  $('bNuevo').onclick = () => hojaNuevo($('bus').value);
+  const validar = () => { $('ok').disabled = !(elegido && $('mot').value); };
+  $('bus').oninput = e => {
+    clearTimeout(t); elegido = null; validar();
+    const q = e.target.value.trim();
+    if (q.length < 2) { $('res').innerHTML = ''; return; }
+    t = setTimeout(async () => {
+      try {
+        const r = await api('buscarSocios', S.token, S.grupo, q);
+        if (!$('res')) return;
+        $('res').innerHTML = r.length ? r.map(s => `<button class="opt" data-id="${esc(s.id)}">${esc(s.nombre)} <span class="mut">· nº ${esc(s.id)}</span></button>`).join('')
+          : '<p class="mut">Sin resultados (o ya está en el grupo).</p>';
+        $('res').querySelectorAll('.opt').forEach(o => o.onclick = () => {
+          elegido = o.dataset.id;
+          $('res').querySelectorAll('.opt').forEach(x => x.classList.toggle('sel', x === o));
+          validar();
+        });
+      } catch(err){ toast(err.message); }
+    }, 350);
+  };
+  $('mot').onchange = validar;
+  $('ok').onclick = () => ejecutar($('ok'), () => api('darAlta', S.token, S.grupo, elegido, $('mot').value, $('nota').value), 'Alta registrada');
+  $('bus').focus();
+}
+
+/* ---------- Ficha del deportista: formulario común para editar y para crear ---------- */
+const SEXOS = ['Femenino', 'Masculino'];
+const MODALIDADES = ['Kayak', 'Canoa', 'Paracanoe', 'Kayak de mar', 'Dragón', 'SUP'];
+function campoLista(id, valores, actual){
+  const lista = actual && valores.indexOf(actual) < 0 ? valores.concat([actual]) : valores;
+  return `<select id="${id}" class="in"><option value="">—</option>${lista.map(v => `<option ${v === actual ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>`;
+}
+function formFicha(f){
+  f = f || {};
+  return `<label>Nombre</label><input id="fNom" class="in" value="${esc(f.nombre)}" autocomplete="off">
+    <label>Apellidos</label><input id="fApe" class="in" value="${esc(f.apellidos)}" autocomplete="off">
+    <label>Fecha de nacimiento (dd/mm/aaaa)</label><input id="fFec" class="in" inputmode="numeric" placeholder="dd/mm/aaaa" value="${esc(f.fecha_nacimiento)}">
+    <label>Sexo</label>${campoLista('fSex', SEXOS, f.sexo)}
+    <label>Modalidad</label>${campoLista('fMod', MODALIDADES, f.modalidad)}`;
+}
+function leerFicha(){
+  return { nombre: $('fNom').value, apellidos: $('fApe').value, fecha_nacimiento: $('fFec').value, sexo: $('fSex').value, modalidad: $('fMod').value };
+}
+
+function hojaEditar(idSocio){
+  const x = S.miembros.find(m => m.idSocio === idSocio);
+  if (!x || !x.ficha) return;
+  abrir(`<h2>Editar datos</h2>${formFicha(x.ficha)}
+    <div class="info">Los cambios quedan en el historial y se pueden deshacer.</div>
+    <button class="btn full" id="ok">Guardar</button>${cancelar}`);
+  $('ok').onclick = async () => {
+    const b = $('ok'); b.disabled = true;
+    try {
+      const r = await api('editarDeportista', S.token, S.grupo, idSocio, leerFicha());
+      cerrar(); toast(r && r.sinCambios ? 'No había nada que cambiar' : 'Datos guardados', r && r.idRegistro); recargar();
+    } catch(e){ toast(e.message); b.disabled = false; }
+  };
+}
+
+function hojaNuevo(texto){
+  const p = String(texto || '').trim().split(/\s+/);
+  abrir(`<h2>Deportista nuevo</h2>
+    <div class="info">Úsalo solo si no aparece al buscarlo. Quedará dado de alta en este grupo.</div>
+    ${formFicha({ nombre: p[0] || '', apellidos: p.slice(1).join(' ') })}
+    <label>Motivo</label>${selectMotivos('alta')}
+    <label>Nota (opcional)</label><textarea id="nota" class="in" rows="2" maxlength="500"></textarea>
+    <button class="btn full" id="ok">Crear y dar de alta</button>${cancelar}`);
+  const op = [...$('mot').options].find(o => o.value === 'Nueva incorporación');
+  if (op) op.selected = true;
+  $('ok').onclick = () => {
+    if (!$('mot').value) return toast('Elige un motivo');
+    ejecutar($('ok'), () => api('crearDeportista', S.token, S.grupo, leerFicha(), $('mot').value, $('nota').value), 'Deportista creado y dado de alta');
+  };
+  $('fNom').focus();
+}
+
+function hojaBaja(idMiembro, nombre){
+  abrir(`<h2>Baja de ${esc(nombre)}</h2>
+    <div class="aviso">Se liberará automáticamente el material y el espacio que tenga asignados en este grupo. Si te equivocas, podrás deshacerlo desde el aviso o desde el Historial.</div>
+    <label>Motivo</label>${selectMotivos('baja')}
+    <label>Nota (opcional)</label><textarea id="nota" class="in" rows="2" maxlength="500"></textarea>
+    <button class="btn ko full" id="ok" disabled>Confirmar baja</button>${cancelar}`);
+  $('mot').onchange = () => { $('ok').disabled = !$('mot').value; };
+  $('ok').onclick = () => ejecutar($('ok'), () => api('darBaja', S.token, S.grupo, idMiembro, $('mot').value, $('nota').value), 'Baja registrada');
+}
+
+async function hojaAsignar(idSocio, nombre, tipo){
+  hojaAsignar.v = (hojaAsignar.v || 0) + 1; const ver = hojaAsignar.v;
+  let elegido = null, lista = [];
+  abrir(`<h2>Asignar a ${esc(nombre)}</h2>
+    <div class="seg"><button class="btn ${tipo === 'material' ? '' : 'sec'}" id="tM">🛶 Material</button><button class="btn ${tipo === 'espacio' ? '' : 'sec'}" id="tE">📍 Espacio</button></div>
+    <input id="fr" class="in" placeholder="Filtrar por nº o descripción" autocomplete="off">
+    <div id="lr"><p class="mut">Cargando…</p></div>
+    <button class="btn full" id="ok" disabled>Asignar</button>${cancelar}`);
+  $('tM').onclick = () => hojaAsignar(idSocio, nombre, 'material');
+  $('tE').onclick = () => hojaAsignar(idSocio, nombre, 'espacio');
+  const pintarL = () => {
+    const f = $('fr').value.toLowerCase().trim();
+    const l = lista.filter(r => !f || r.texto.toLowerCase().includes(f)).slice(0, 80);
+    $('lr').innerHTML = l.length ? l.map(r => `<button class="opt ${r.id === elegido ? 'sel' : ''}" data-id="${esc(r.id)}">${ICON[tipo]} ${esc(r.texto)}</button>`).join('')
+      : `<p class="mut">${lista.length ? 'Nada coincide.' : (tipo === 'material' ? 'No hay material disponible.' : 'No hay espacios libres.')}</p>`;
+    $('lr').querySelectorAll('.opt').forEach(o => o.onclick = () => { elegido = o.dataset.id; $('ok').disabled = false; pintarL(); });
+  };
+  $('fr').oninput = pintarL;
+  $('ok').onclick = () => ejecutar($('ok'), () => api('asignar', S.token, S.grupo, idSocio, tipo, elegido), 'Asignado');
+  try {
+    lista = await api('recursosDisponibles', S.token, tipo);
+    if (ver === hojaAsignar.v && $('lr')) pintarL();
+  } catch(e){ toast(e.message); }
+}
+
+function hojaLiberar(idAsig, texto, nombre){
+  abrir(`<h2>Liberar</h2><p>¿Quitar <b>${esc(texto)}</b> a ${esc(nombre)}? Quedará disponible para otros.</p>
+    <button class="btn full" id="ok">Sí, liberar</button>${cancelar}`);
+  $('ok').onclick = () => ejecutar($('ok'), () => api('liberar', S.token, S.grupo, idAsig), 'Liberado');
+}
+
+/* ---------- INICIO ---------- */
+S.token = cargar('mizona_sesion');
+if (S.token) arrancar(); else irInicio();
+</script>
+</body>
+</html>

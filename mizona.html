@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f3d4c">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CEPA">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<title>Mi zona · CEPA</title>
+<style>
+  :root {
+    --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #d9d3c7; --blanco: #fff;
+    --agua: #0f3d4c; --entrada: #1f7a5a; --pausa: #b7791f; --salida: #a33b2b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta);
+         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 22px 18px calc(96px + env(safe-area-inset-bottom)); }
+  .marca { font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--suave); }
+  h1 { font-size: 27px; margin: 4px 0 0; }
+  h2 { font-size: 15px; color: var(--suave); font-weight: 650; margin: 26px 0 8px; }
+  .reloj { font-variant-numeric: tabular-nums; font-size: 42px; font-weight: 700; color: var(--agua); margin: 14px 0 0; }
+  .fecha { color: var(--suave); font-size: 15px; }
+  .caja { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 14px 16px; margin: 14px 0; }
+  .caja b { font-weight: 650; }
+  label { display: block; font-size: 14px; color: var(--suave); margin: 14px 0 6px; }
+  input, select, textarea { width: 100%; font: inherit; padding: 12px; border-radius: 12px; border: 1px solid var(--linea); background: #fff; color: var(--tinta); }
+  input.pin { font-size: 26px; letter-spacing: .4em; text-align: center; }
+  textarea { min-height: 70px; }
+  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  button { font: inherit; font-weight: 650; border: 0; border-radius: 14px; padding: 15px 12px; color: #fff; background: var(--agua); cursor: pointer; width: 100%; }
+  button[disabled] { opacity: .3; }
+  button.sec { background: #fff; color: var(--agua); border: 1px solid var(--linea); }
+  button.mini { width: auto; padding: 7px 12px; font-size: 14px; border-radius: 10px; }
+  .b-entrada { background: var(--entrada); grid-column: 1 / -1; padding: 18px; }
+  .b-salida { background: var(--salida); grid-column: 1 / -1; padding: 18px; }
+  .b-inicio_pausa, .b-fin_pausa { background: var(--pausa); padding: 18px; }
+  .aviso { margin-top: 12px; min-height: 22px; font-size: 15px; }
+  .ok { color: var(--entrada); } .error { color: var(--salida); }
+  ul.lista { list-style: none; padding: 0; margin: 0; background: #fff; border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; }
+  ul.lista li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--linea); font-size: 15px; }
+  ul.lista li:first-child { border-top: 0; }
+  .dcha { color: var(--suave); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .sub { display: block; font-size: 13px; color: var(--suave); }
+  .vacio { padding: 14px; color: var(--suave); font-size: 14px; }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 99px; background: #eee9df; color: var(--tinta); }
+  .chip.verde { background: #dcefe6; color: var(--entrada); } .chip.ambar { background: #f6e8cf; color: #8a5a12; } .chip.rojo { background: #f3dcd8; color: var(--salida); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 6px; }
+  .cifras b { display: block; font-size: 26px; color: var(--agua); }
+  .cifras span { font-size: 12.5px; color: var(--suave); }
+  .pie { margin-top: 26px; font-size: 12.5px; line-height: 1.5; color: var(--suave); }
+  .oculto { display: none !important; }
+  a.volver { display: inline-block; color: var(--agua); text-decoration: none; font-weight: 650; font-size: 15px; margin-bottom: 10px; }
+  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--linea);
+        display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
+  nav .tabs { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 480px; }
+  nav button { background: none; color: var(--suave); border-radius: 0; padding: 9px 2px 10px; font-size: 11.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  nav button svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  nav button.activa { color: var(--agua); }
+  .punto { width: 7px; height: 7px; background: var(--salida); border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
+  .foto { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--linea); }
+  a.boton { display: block; text-align: center; text-decoration: none; font-weight: 650; background: var(--entrada); color: #fff; padding: 9px 12px; border-radius: 10px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <a href="./" class="volver">‹ CEPA</a>
+  <div class="marca">Mi zona</div>
+  <h1 id="saludo">Cargando…</h1>
+  <div class="aviso error" id="fatal"></div>
+
+  <!-- ============ FICHAR ============ -->
+  <section id="v-fichar" class="vista oculto">
+    <div class="reloj" id="reloj">--:--</div>
+    <div class="fecha" id="fecha"></div>
+    <div class="caja" id="estado"></div>
+    <label for="pin">Tu PIN</label>
+    <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
+    <div class="botones">
+      <button class="b-entrada" data-tipo="entrada">Entrada</button>
+      <button class="b-inicio_pausa" data-tipo="inicio_pausa">Iniciar pausa</button>
+      <button class="b-fin_pausa" data-tipo="fin_pausa">Volver de pausa</button>
+      <button class="b-salida" data-tipo="salida">Salida</button>
+    </div>
+    <div class="aviso" id="avisoFichar" role="status"></div>
+    <h2>Hoy</h2>
+    <ul class="lista" id="listaHoy"></ul>
+    <h2>Mis últimas jornadas</h2>
+    <ul class="lista" id="listaJornadas"><li class="vacio">Entra con tu PIN para verlas.</li></ul>
+    <p class="pie">La hora la registra el servidor. Al fichar se guarda tu ubicación en ese momento,
+      solo para acreditar dónde se registró la jornada; no se te localiza en ningún otro momento.</p>
+  </section>
+
+  <!-- ============ ENTRAR (PIN para el resto de apartados) ============ -->
+  <section id="v-entrar" class="vista oculto">
+    <div class="caja">Para ver tus nóminas, vacaciones y documentos, escribe tu PIN una vez. Este móvil lo recordará.</div>
+    <label for="pinEntrar">Tu PIN</label>
+    <input id="pinEntrar" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
+    <div style="margin-top:14px"><button id="btnEntrar">Entrar</button></div>
+    <div class="aviso" id="avisoEntrar"></div>
+  </section>
+
+  <!-- ============ AUSENCIAS ============ -->
+  <section id="v-ausencias" class="vista oculto">
+    <h2 style="margin-top:18px">Vacaciones <span id="vacAnio"></span></h2>
+    <div class="caja cifras">
+      <div><b id="vacDisp">–</b><span>disponibles</span></div>
+      <div><b id="vacUsad">–</b><span>disfrutados</span></div>
+      <div><b id="vacPend">–</b><span>pendientes de aprobar</span></div>
+    </div>
+    <p class="pie" style="margin-top:0" id="vacNota"></p>
+    <h2>Solicitar ausencia</h2>
+    <div class="caja">
+      <label style="margin-top:0">Tipo <select id="ausTipo"></select></label>
+      <label>Desde <input type="date" id="ausDesde"></label>
+      <label>Hasta <input type="date" id="ausHasta"></label>
+      <label>Comentario (opcional) <textarea id="ausComentario" maxlength="500"></textarea></label>
+      <div style="margin-top:14px"><button id="btnAusencia">Enviar solicitud</button></div>
+      <div class="aviso" id="avisoAus"></div>
+    </div>
+    <h2>Mis solicitudes</h2>
+    <ul class="lista" id="listaAus"></ul>
+  </section>
+
+  <!-- ============ NÓMINAS ============ -->
+  <section id="v-nominas" class="vista oculto">
+    <h2 style="margin-top:18px">Mis nóminas</h2>
+    <ul class="lista" id="listaNominas"></ul>
+  </section>
+
+  <!-- ============ DOCUMENTOS ============ -->
+  <section id="v-documentos" class="vista oculto">
+    <h2 style="margin-top:18px">Mis documentos</h2>
+    <ul class="lista" id="listaDocs"></ul>
+    <h2>Mi perfil</h2>
+    <ul class="lista" id="perfil"></ul>
+    <div style="margin-top:18px"><button class="sec" id="btnSalir">Cerrar sesión en este móvil</button></div>
+  </section>
+
+  <!-- ============ GASTOS ============ -->
+  <section id="v-gastos" class="vista oculto">
+    <h2 style="margin-top:18px">Enviar ticket o factura</h2>
+    <div class="caja">
+      Haz una foto del ticket entero, bien iluminado y sin sombras, o elige un PDF. Le llega al club directamente.
+      <label>Foto o PDF <input type="file" id="gArchivo" accept="image/*,application/pdf"></label>
+      <img id="gVista" class="foto oculto" alt="Vista previa">
+      <label>¿Qué es? (opcional) <input id="gNota" maxlength="300" placeholder="Gasolina salida a Toledo, material…"></label>
+      <div style="margin-top:14px"><button id="btnGasto">Enviar</button></div>
+      <div class="aviso" id="avisoGasto"></div>
+    </div>
+    <h2>Enviados</h2>
+    <ul class="lista" id="listaGastos"></ul>
+  </section>
+</main>
+
+<nav><div class="tabs">
+  <button data-v="fichar" class="activa"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Fichar</button>
+  <button data-v="ausencias"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Ausencias</button>
+  <button data-v="nominas"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h7"/></svg><span>Nóminas<span id="puntoNom" class="punto oculto"></span></span></button>
+  <button data-v="documentos"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Docs<span id="puntoDoc" class="punto oculto"></span></span></button>
+  <button data-v="gastos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Gastos</button>
+</div></nav>
+
+<script>
+// ====== CONFIGURACIÓN ======
+const SUPABASE_URL = "https://jwxcwypuvqzzjtljhlhz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_oroyxAbhQmwyRjRmUZ92Jg_7nmSYGd8";
+const API_URL      = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";   // Apps Script «Mi zona · API»
+// ===========================
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const zona = { timeZone: 'Europe/Madrid' };
+const NOMBRES = { entrada: 'Entrada', inicio_pausa: 'Inicio de pausa', fin_pausa: 'Fin de pausa', salida: 'Salida' };
+const PERMITIDOS = { ninguno: ['entrada'], salida: ['entrada'], entrada: ['inicio_pausa', 'salida'],
+                     fin_pausa: ['inicio_pausa', 'salida'], inicio_pausa: ['fin_pausa'] };
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+const guardado = {
+  leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+};
+const TOKEN = (() => {
+  const m = location.hash.match(/t=([a-f0-9]{48})/i);
+  if (m) { guardado.poner('fichar_token', m[1]); return m[1]; }   // el enlace se mantiene para «Añadir a pantalla de inicio»
+  return guardado.leer('fichar_token');
+})();
+let SESION = guardado.leer('mizona_sesion');
+let DATOS = null;
+let VISTA = 'fichar';
+
+// ---------- Conexiones ----------
+async function rpc(nombre, datos) {
+  const cab = { 'Content-Type': 'application/json', apikey: SUPABASE_KEY };
+  if (SUPABASE_KEY.startsWith('eyJ')) cab.Authorization = 'Bearer ' + SUPABASE_KEY;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${nombre}`, { method: 'POST', headers: cab, body: JSON.stringify(datos) });
+  if (!r.ok) throw new Error('No se ha podido conectar (' + r.status + ')');
+  return r.json();
+}
+async function api(accion, datos) {
+  const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ accion, sesion: SESION }, datos || {})) });
+  if (!r.ok) throw new Error('No se ha podido conectar con el club');
+  const j = await r.json();
+  if (!j.ok) {
+    if (j.error === 'SESION') { SESION = null; guardado.poner('mizona_sesion', null); DATOS = null; mostrar(VISTA); throw new Error('Vuelve a escribir tu PIN'); }
+    throw new Error(j.error);
+  }
+  return j;
+}
+async function entrarCon(pin) {
+  const r = await api('entrar', { token: TOKEN, pin });
+  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+  await cargarResumen();
+}
+async function cargarResumen() {
+  if (!SESION) return;
+  DATOS = await api('resumen');
+  pintarTodo();
+}
+
+// ---------- Navegación ----------
+function mostrar(v) {
+  VISTA = v;
+  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activa', b.dataset.v === v));
+  const necesitaSesion = v !== 'fichar' && !SESION;
+  document.querySelectorAll('.vista').forEach((s) => s.classList.add('oculto'));
+  $(necesitaSesion ? 'v-entrar' : 'v-' + v).classList.remove('oculto');
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.v)));
+
+$('btnEntrar').addEventListener('click', async () => {
+  const pin = $('pinEntrar').value.trim();
+  if (!/^\d{4,6}$/.test(pin)) return avisar('avisoEntrar', 'Escribe tu PIN (4 a 6 cifras).', 'error');
+  $('btnEntrar').disabled = true; avisar('avisoEntrar', 'Comprobando…');
+  try { await entrarCon(pin); $('pinEntrar').value = ''; avisar('avisoEntrar', ''); mostrar(VISTA); }
+  catch (e) { avisar('avisoEntrar', e.message, 'error'); }
+  finally { $('btnEntrar').disabled = false; }
+});
+$('btnSalir').addEventListener('click', async () => {
+  try { await api('salir'); } catch (e) {}
+  SESION = null; DATOS = null; guardado.poner('mizona_sesion', null); mostrar('fichar');
+});
+
+function avisar(id, texto, clase) { const a = $(id); a.textContent = texto; a.className = 'aviso ' + (clase || ''); }
+const hora = (iso) => new Date(iso).toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' });
+const fechaCorta = (ymd) => { const [a, m, d] = ymd.split('-'); return `${Number(d)} ${MESES[Number(m) - 1].slice(0, 3)} ${a}`; };
+const diaSemana = (ymd) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const hhmm = (h) => `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`;
+
+// ---------- Fichar ----------
+function pintarReloj() {
+  const a = new Date();
+  $('reloj').textContent = a.toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' });
+  $('fecha').textContent = a.toLocaleDateString('es-ES', { ...zona, weekday: 'long', day: 'numeric', month: 'long' });
+}
+setInterval(pintarReloj, 1000); pintarReloj();
+
+function pintarHoy(d) {
+  $('saludo').textContent = 'Hola, ' + d.nombre.split(' ')[0];
+  const hoy = d.hoy || [], ult = hoy.length ? hoy[hoy.length - 1] : null, clave = ult ? ult.tipo : 'ninguno';
+  const t = { ninguno: 'Todavía no has fichado hoy.', salida: `Jornada cerrada a las <b>${ult && hora(ult.momento)}</b>.`,
+    entrada: `Trabajando desde las <b>${ult && hora(ult.momento)}</b>.`, fin_pausa: `Trabajando desde las <b>${ult && hora(ult.momento)}</b> (después de la pausa).`,
+    inicio_pausa: `En pausa desde las <b>${ult && hora(ult.momento)}</b>.` };
+  $('estado').innerHTML = t[clave];
+  document.querySelectorAll('button[data-tipo]').forEach((b) => (b.disabled = !PERMITIDOS[clave].includes(b.dataset.tipo)));
+  $('listaHoy').innerHTML = hoy.length ? hoy.map((f) => `<li><span>${NOMBRES[f.tipo]}</span><span class="dcha">${hora(f.momento)}</span></li>`).join('')
+    : '<li class="vacio">Sin fichajes.</li>';
+}
+async function cargarHoy() {
+  const d = await rpc('consultar_estado', { p_token: TOKEN });
+  if (!d.ok) throw new Error(d.error);
+  pintarHoy(d);
+}
+function ubicacion() {
+  return new Promise((ok) => {
+    if (!navigator.geolocation) return ok({ error: 'este navegador no permite ubicación' });
+    navigator.geolocation.getCurrentPosition(
+      (p) => ok({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy }),
+      (e) => ok({ error: e.code === 1 ? 'permiso de ubicación denegado' : e.code === 3 ? 'la ubicación tardó demasiado' : 'no se pudo obtener la ubicación' }),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  });
+}
+async function fichar(tipo) {
+  const pin = $('pin').value.trim();
+  if (!/^\d{4,6}$/.test(pin)) { avisar('avisoFichar', 'Escribe tu PIN (4 a 6 cifras).', 'error'); $('pin').focus(); return; }
+  document.querySelectorAll('button[data-tipo]').forEach((b) => (b.disabled = true));
+  avisar('avisoFichar', 'Obteniendo ubicación…');
+  const u = await ubicacion(), ub = u.error ? null : u;
+  avisar('avisoFichar', 'Registrando…');
+  try {
+    const r = await rpc('fichar', { p_token: TOKEN, p_pin: pin, p_tipo: tipo,
+      p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null });
+    if (r.ok) {
+      $('pin').value = '';
+      avisar('avisoFichar', `${NOMBRES[tipo]} registrada a las ${hora(r.momento)}` + (ub ? ' con ubicación.' : ` (sin ubicación: ${u.error}).`), 'ok');
+      if (!SESION) entrarCon(pin).catch(() => {});      // aprovecha el PIN para abrir el resto de apartados
+      else cargarResumen().catch(() => {});
+    } else avisar('avisoFichar', r.error, 'error');
+  } catch (e) { avisar('avisoFichar', e.message + '. No se ha registrado: vuelve a intentarlo.', 'error'); }
+  cargarHoy().catch(() => {});
+}
+document.querySelectorAll('button[data-tipo]').forEach((b) => b.addEventListener('click', () => fichar(b.dataset.tipo)));
+
+// ---------- Pintar datos de la sesión ----------
+function pintarTodo() {
+  const d = DATOS; if (!d) return;
+  // Jornadas
+  $('listaJornadas').innerHTML = d.jornadas.length ? d.jornadas.map((j) => `<li><span>${esc(diaSemana(j.dia))}
+      <span class="sub">${esc(j.entrada)} – ${esc(j.salida || '…')}${j.pausa ? ' · pausa ' + hhmm(j.pausa) : ''}</span></span>
+      <span class="dcha">${j.abierta ? '<span class="chip rojo">Sin cerrar</span>' : hhmm(j.horas)}</span></li>`).join('')
+    : '<li class="vacio">Todavía no hay jornadas.</li>';
+  // Vacaciones
+  const v = d.vacaciones;
+  $('vacAnio').textContent = v.anio;
+  $('vacDisp').textContent = v.disponibles; $('vacUsad').textContent = v.usados; $('vacPend').textContent = v.pendientes;
+  $('vacNota').textContent = `Te corresponden ${v.dias} días ${v.tipo} al año según tu contrato.`;
+  if (!$('ausTipo').options.length) $('ausTipo').innerHTML = Object.entries(d.tiposAusencia).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
+  const chip = { pendiente: 'ambar', aprobada: 'verde', rechazada: 'rojo', anulada: '' };
+  $('listaAus').innerHTML = d.ausencias.length ? d.ausencias.map((a) => `<li><span>${esc(a.tipoTexto)}
+      <span class="sub">${fechaCorta(a.desde)}${a.hasta !== a.desde ? ' – ' + fechaCorta(a.hasta) : ''} · ${a.dias} días</span>
+      ${a.respuesta ? `<span class="sub">Respuesta: ${esc(a.respuesta)}</span>` : ''}</span>
+      <span class="dcha"><span class="chip ${chip[a.estado]}">${a.estado}</span>
+      ${a.estado === 'pendiente' ? `<br><button class="mini sec" data-anular="${a.id}" style="margin-top:6px">Anular</button>` : ''}</span></li>`).join('')
+    : '<li class="vacio">No has solicitado ninguna.</li>';
+  // Documentos
+  const fila = (x) => `<li><span>${esc(x.titulo)}<span class="sub">${x.visto_en ? 'Subido el ' + new Date(x.subido_en).toLocaleDateString('es-ES', zona) : '<b style="color:var(--salida)">Nuevo</b>'}</span></span>
+      <span class="dcha" id="doc-${x.id}"><button class="mini sec" data-doc="${x.id}">Abrir</button></span></li>`;
+  const nominas = d.documentos.filter((x) => x.tipo === 'nomina');
+  const otros = d.documentos.filter((x) => x.tipo !== 'nomina');
+  $('listaNominas').innerHTML = nominas.length ? nominas.map(fila).join('') : '<li class="vacio">Todavía no tienes nóminas subidas.</li>';
+  $('listaDocs').innerHTML = otros.length ? otros.map(fila).join('') : '<li class="vacio">Todavía no tienes documentos.</li>';
+  $('puntoNom').classList.toggle('oculto', !nominas.some((x) => !x.visto_en));
+  $('puntoDoc').classList.toggle('oculto', !otros.some((x) => !x.visto_en));
+  $('perfil').innerHTML = `<li><span>Nombre</span><span class="dcha">${esc(d.nombre)}</span></li>
+    <li><span>Puesto</span><span class="dcha">${esc(d.puesto || '—')}</span></li>
+    <li class="vacio">Si algún dato no es correcto, díselo al club.</li>`;
+  // Gastos
+  $('listaGastos').innerHTML = d.facturas.length ? d.facturas.map((f) => `<li><span>${esc(f.nota || 'Ticket')}</span><span class="dcha">${esc(f.fecha)}</span></li>`).join('')
+    : '<li class="vacio">Todavía no has enviado ninguno.</li>';
+}
+
+// ---------- Ausencias ----------
+$('btnAusencia').addEventListener('click', async () => {
+  const desde = $('ausDesde').value, hasta = $('ausHasta').value || desde;
+  if (!desde) return avisar('avisoAus', 'Elige las fechas.', 'error');
+  $('btnAusencia').disabled = true; avisar('avisoAus', 'Enviando…');
+  try {
+    DATOS = await api('solicitarAusencia', { tipo: $('ausTipo').value, desde, hasta, comentario: $('ausComentario').value });
+    pintarTodo(); $('ausComentario').value = ''; $('ausDesde').value = ''; $('ausHasta').value = '';
+    avisar('avisoAus', 'Solicitud enviada. Te avisaremos por correo cuando se apruebe.', 'ok');
+  } catch (e) { avisar('avisoAus', e.message, 'error'); }
+  finally { $('btnAusencia').disabled = false; }
+});
+$('ausDesde').addEventListener('change', () => { if (!$('ausHasta').value || $('ausHasta').value < $('ausDesde').value) $('ausHasta').value = $('ausDesde').value; });
+$('listaAus').addEventListener('click', async (ev) => {
+  const b = ev.target.closest('button[data-anular]'); if (!b) return;
+  if (!confirm('¿Anular esta solicitud?')) return;
+  b.disabled = true;
+  try { DATOS = await api('anularAusencia', { id: b.dataset.anular }); pintarTodo(); } catch (e) { alert(e.message); b.disabled = false; }
+});
+
+// ---------- Abrir documentos (dos toques: preparar y abrir, para que el móvil no lo bloquee) ----------
+document.addEventListener('click', async (ev) => {
+  const b = ev.target.closest('button[data-doc]'); if (!b) return;
+  b.disabled = true; b.textContent = 'Preparando…';
+  try {
+    const r = await api('descargar', { id: b.dataset.doc });
+    const bytes = Uint8Array.from(atob(r.datos), (c) => c.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: r.mime }));
+    $('doc-' + b.dataset.doc).innerHTML = `<a class="boton" href="${url}" target="_blank" download="${esc(r.nombre)}">Ver</a>`;
+  } catch (e) { alert(e.message); b.disabled = false; b.textContent = 'Abrir'; }
+});
+
+// ---------- Gastos ----------
+let GASTO = null;
+function comprimir(archivo) {
+  return new Promise((ok, ko) => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1800, k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      ok(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => ko(new Error('No se puede leer la foto. Prueba a hacerla de nuevo.'));
+    img.src = URL.createObjectURL(archivo);
+  });
+}
+$('gArchivo').addEventListener('change', async () => {
+  const a = $('gArchivo').files[0]; GASTO = null; $('gVista').classList.add('oculto'); avisar('avisoGasto', '');
+  if (!a) return;
+  try {
+    if (a.type === 'application/pdf') {
+      if (a.size > 8 * 1024 * 1024) throw new Error('El PDF pesa más de 8 MB');
+      const datos = await new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = ko; r.readAsDataURL(a); });
+      GASTO = { mime: 'application/pdf', datos }; avisar('avisoGasto', 'PDF listo para enviar.');
+    } else {
+      const url = await comprimir(a);
+      GASTO = { mime: 'image/jpeg', datos: url.split(',')[1] };
+      $('gVista').src = url; $('gVista').classList.remove('oculto');
+    }
+  } catch (e) { avisar('avisoGasto', e.message, 'error'); }
+});
+$('btnGasto').addEventListener('click', async () => {
+  if (!GASTO) return avisar('avisoGasto', 'Primero haz la foto o elige el archivo.', 'error');
+  $('btnGasto').disabled = true; avisar('avisoGasto', 'Enviando…');
+  try {
+    DATOS = await api('enviarFactura', Object.assign({ nota: $('gNota').value }, GASTO));
+    pintarTodo(); GASTO = null; $('gArchivo').value = ''; $('gNota').value = ''; $('gVista').classList.add('oculto');
+    avisar('avisoGasto', 'Enviado. ¡Gracias!', 'ok');
+  } catch (e) { avisar('avisoGasto', e.message, 'error'); }
+  finally { $('btnGasto').disabled = false; }
+});
+
+// ---------- Arranque ----------
+(async function () {
+  if (!TOKEN) {
+    $('saludo').textContent = 'Falta tu enlace';
+    $('fatal').innerHTML = 'Abre CEPA desde el enlace personal que te ha enviado el club.';
+    document.querySelector('nav').classList.add('oculto');
+    return;
+  }
+  const inicial = new URLSearchParams(location.search).get('v');
+  mostrar(['fichar', 'ausencias', 'nominas', 'documentos', 'gastos'].includes(inicial) ? inicial : 'fichar');
+  try { await cargarHoy(); } catch (e) { $('saludo').textContent = 'No se ha podido cargar'; $('fatal').textContent = e.message; }
+  cargarResumen().catch(() => {});
+})();
+</script>
+</body>
+</html>
