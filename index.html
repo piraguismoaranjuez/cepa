@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f3d4c">
+<meta name="robots" content="noindex">
+<title>Fichar · Registro de jornada</title>
+<style>
+  :root {
+    --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #d9d3c7;
+    --agua: #0f3d4c; --entrada: #1f7a5a; --pausa: #b7791f; --salida: #a33b2b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; justify-content: center;
+  }
+  main { width: 100%; max-width: 440px; padding: 28px 20px 40px; }
+  header { margin-bottom: 22px; }
+  .marca { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--suave); }
+  h1 { font-size: 28px; margin: 6px 0 0; font-weight: 700; }
+  .reloj { font-variant-numeric: tabular-nums; font-size: 44px; font-weight: 700; color: var(--agua); margin: 18px 0 2px; }
+  .fecha { color: var(--suave); font-size: 15px; }
+  .estado {
+    margin: 18px 0; padding: 12px 14px; border-radius: 12px; background: #fff;
+    border: 1px solid var(--linea); font-size: 16px;
+  }
+  .estado b { font-weight: 650; }
+  label { display: block; font-size: 14px; color: var(--suave); margin: 18px 0 6px; }
+  input[type=password] {
+    width: 100%; font-size: 26px; letter-spacing: .4em; text-align: center;
+    padding: 12px; border-radius: 12px; border: 1px solid var(--linea); background: #fff;
+  }
+  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  button {
+    font: inherit; font-size: 17px; font-weight: 650; padding: 18px 10px; border: 0;
+    border-radius: 14px; color: #fff; cursor: pointer;
+  }
+  button[disabled] { opacity: .25; cursor: not-allowed; }
+  .b-entrada { background: var(--entrada); grid-column: 1 / -1; }
+  .b-salida  { background: var(--salida);  grid-column: 1 / -1; }
+  .b-inicio_pausa, .b-fin_pausa { background: var(--pausa); }
+  .aviso { margin-top: 16px; min-height: 22px; font-size: 15px; }
+  .aviso.ok { color: var(--entrada); } .aviso.error { color: var(--salida); }
+  h2 { font-size: 15px; color: var(--suave); font-weight: 600; margin: 28px 0 8px; }
+  ul { list-style: none; padding: 0; margin: 0; background: #fff; border: 1px solid var(--linea); border-radius: 12px; }
+  li { display: flex; justify-content: space-between; padding: 10px 14px; border-top: 1px solid var(--linea); font-size: 15px; }
+  li:first-child { border-top: 0; }
+  li span:last-child { font-variant-numeric: tabular-nums; color: var(--suave); }
+  .vacio { padding: 12px 14px; color: var(--suave); font-size: 14px; }
+  .pie { margin-top: 26px; font-size: 12.5px; line-height: 1.5; color: var(--suave); }
+  .oculto { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="marca">Registro de jornada</div>
+    <h1 id="saludo">Cargando…</h1>
+    <div class="reloj" id="reloj">--:--</div>
+    <div class="fecha" id="fecha"></div>
+  </header>
+
+  <div id="panel" class="oculto">
+    <div class="estado" id="estado"></div>
+
+    <label for="pin">Tu PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
+
+    <div class="botones">
+      <button class="b-entrada"      data-tipo="entrada">Entrada</button>
+      <button class="b-inicio_pausa" data-tipo="inicio_pausa">Iniciar pausa</button>
+      <button class="b-fin_pausa"    data-tipo="fin_pausa">Volver de pausa</button>
+      <button class="b-salida"       data-tipo="salida">Salida</button>
+    </div>
+
+    <div class="aviso" id="aviso" role="status"></div>
+
+    <h2>Tus fichajes de hoy</h2>
+    <ul id="lista"></ul>
+
+    <p class="pie">
+      La hora la registra el servidor. Al fichar se guarda tu ubicación en ese momento,
+      solo para acreditar dónde se registró la jornada; no se te localiza en ningún otro momento.
+    </p>
+  </div>
+
+  <div class="aviso error" id="fatal"></div>
+</main>
+
+<script>
+// ====== CONFIGURACIÓN: rellenar con los datos del proyecto de Supabase ======
+const SUPABASE_URL = "https://jwxcwypuvqzzjtljhlhz.supabase.co";
+const SUPABASE_KEY = "sb_publishable_oroyxAbhQmwyRjRmUZ92Jg_7nmSYGd8";   // anon / publishable key (es pública, no la de servicio)
+// ===========================================================================
+
+const NOMBRES = { entrada: "Entrada", inicio_pausa: "Inicio de pausa", fin_pausa: "Fin de pausa", salida: "Salida" };
+const PERMITIDOS = {
+  ninguno:      ["entrada"],
+  salida:       ["entrada"],
+  entrada:      ["inicio_pausa", "salida"],
+  fin_pausa:    ["inicio_pausa", "salida"],
+  inicio_pausa: ["fin_pausa"]
+};
+const zona = { timeZone: "Europe/Madrid" };
+const $ = (id) => document.getElementById(id);
+
+// --- Enlace personal: #t=CODIGO (se recuerda en este dispositivo) ---
+function leerToken() {
+  const m = location.hash.match(/t=([a-f0-9]{48})/i);
+  if (m) {
+    try { localStorage.setItem("fichar_token", m[1]); } catch (e) {}
+    return m[1];
+  }
+  try { return localStorage.getItem("fichar_token"); } catch (e) { return null; }
+}
+const TOKEN = leerToken();
+
+// --- Llamada a Supabase ---
+async function rpc(nombre, datos) {
+  const cabeceras = { "Content-Type": "application/json", "apikey": SUPABASE_KEY };
+  if (SUPABASE_KEY.startsWith("eyJ")) cabeceras["Authorization"] = "Bearer " + SUPABASE_KEY;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${nombre}`, {
+    method: "POST", headers: cabeceras, body: JSON.stringify(datos)
+  });
+  if (!r.ok) throw new Error("No se ha podido conectar (" + r.status + ")");
+  return r.json();
+}
+
+// --- Reloj ---
+function pintarReloj() {
+  const ahora = new Date();
+  $("reloj").textContent = ahora.toLocaleTimeString("es-ES", { ...zona, hour: "2-digit", minute: "2-digit" });
+  $("fecha").textContent = ahora.toLocaleDateString("es-ES", { ...zona, weekday: "long", day: "numeric", month: "long" });
+}
+setInterval(pintarReloj, 1000); pintarReloj();
+
+const hora = (iso) => new Date(iso).toLocaleTimeString("es-ES", { ...zona, hour: "2-digit", minute: "2-digit" });
+
+// --- Estado y lista ---
+function pintar(datos) {
+  $("saludo").textContent = "Hola, " + datos.nombre.split(" ")[0];
+  const hoy = datos.hoy || [];
+  const ultimo = hoy.length ? hoy[hoy.length - 1] : null;
+  const clave = ultimo ? ultimo.tipo : "ninguno";
+
+  const textos = {
+    ninguno:      "Todavía no has fichado hoy.",
+    salida:       `Jornada cerrada a las <b>${ultimo && hora(ultimo.momento)}</b>.`,
+    entrada:      `Trabajando desde las <b>${ultimo && hora(ultimo.momento)}</b>.`,
+    fin_pausa:    `Trabajando desde las <b>${ultimo && hora(ultimo.momento)}</b> (después de la pausa).`,
+    inicio_pausa: `En pausa desde las <b>${ultimo && hora(ultimo.momento)}</b>.`
+  };
+  $("estado").innerHTML = textos[clave];
+
+  document.querySelectorAll("button[data-tipo]").forEach((b) => {
+    b.disabled = !PERMITIDOS[clave].includes(b.dataset.tipo);
+  });
+
+  $("lista").innerHTML = hoy.length
+    ? hoy.map((f) => `<li><span>${NOMBRES[f.tipo]}</span><span>${hora(f.momento)}</span></li>`).join("")
+    : `<li class="vacio">Sin fichajes.</li>`;
+}
+
+async function cargar() {
+  if (!TOKEN) {
+    $("saludo").textContent = "Falta tu enlace";
+    $("fatal").textContent = "Abre esta página desde el enlace personal que te ha enviado el club.";
+    return;
+  }
+  try {
+    const d = await rpc("consultar_estado", { p_token: TOKEN });
+    if (!d.ok) { $("saludo").textContent = "Enlace no válido"; $("fatal").textContent = d.error; return; }
+    $("panel").classList.remove("oculto");
+    pintar(d);
+  } catch (e) {
+    $("saludo").textContent = "Sin conexión";
+    $("fatal").textContent = e.message;
+  }
+}
+
+// --- Ubicación (si se deniega, se ficha igual y queda sin ubicación) ---
+function obtenerUbicacion() {
+  return new Promise((resolver) => {
+    if (!navigator.geolocation) return resolver(null);
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolver({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy }),
+      () => resolver(null),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  });
+}
+
+function avisar(texto, tipo) {
+  const a = $("aviso");
+  a.textContent = texto;
+  a.className = "aviso " + (tipo || "");
+}
+
+async function fichar(tipo) {
+  const pin = $("pin").value.trim();
+  if (!/^\d{4,6}$/.test(pin)) { avisar("Escribe tu PIN (4 a 6 cifras).", "error"); $("pin").focus(); return; }
+
+  document.querySelectorAll("button[data-tipo]").forEach((b) => (b.disabled = true));
+  avisar("Obteniendo ubicación…");
+  const ub = await obtenerUbicacion();
+  avisar("Registrando…");
+
+  try {
+    const r = await rpc("fichar", {
+      p_token: TOKEN, p_pin: pin, p_tipo: tipo,
+      p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null
+    });
+    if (r.ok) {
+      $("pin").value = "";
+      avisar(`${NOMBRES[tipo]} registrada a las ${hora(r.momento)}` + (ub ? "." : " (sin ubicación)."), "ok");
+    } else {
+      avisar(r.error, "error");
+    }
+  } catch (e) {
+    avisar(e.message + ". No se ha registrado: vuelve a intentarlo.", "error");
+  }
+  const d = await rpc("consultar_estado", { p_token: TOKEN }).catch(() => null);
+  if (d && d.ok) pintar(d);
+}
+
+document.querySelectorAll("button[data-tipo]").forEach((b) =>
+  b.addEventListener("click", () => fichar(b.dataset.tipo))
+);
+cargar();
+</script>
+</body>
+</html>
