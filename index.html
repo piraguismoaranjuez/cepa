@@ -46,6 +46,20 @@
   .pie { text-align: center; margin-top: 30px; }
   .pie a { color: var(--suave); font-size: 14px; }
   .oculto { display: none !important; }
+  .anuncio { display: block; background: #fff; border: 1px solid var(--linea); border-radius: 16px; overflow: hidden; margin-bottom: 12px; color: inherit; text-decoration: none; position: relative; }
+  .anuncio img { width: 100%; max-height: 170px; object-fit: cover; display: block; }
+  .anuncio div { padding: 14px 16px; }
+  .anuncio b { display: block; font-size: 16px; margin: 2px 0 4px; }
+  .anuncio p { margin: 0; color: var(--suave); font-size: 14.5px; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .anuncio.abierto p { -webkit-line-clamp: unset; display: block; }
+  .anuncio small { color: var(--suave); font-size: 12.5px; }
+  .anuncio .nuevo { position: absolute; top: 12px; right: 12px; background: var(--rojo); color: #fff; font-size: 11px; font-weight: 700; border-radius: 99px; padding: 2px 8px; }
+  .evento { display: inline-block; background: #fdf0dc; color: #8a5a12; border-radius: 99px; font-size: 12px; padding: 1px 8px; margin-left: 4px; }
+  .turno { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--linea); border-left: 4px solid var(--c); border-radius: 14px; padding: 10px 14px; margin-bottom: 8px; }
+  .turno .f { text-align: center; min-width: 40px; font-weight: 750; line-height: 1.1; }
+  .turno .f small { display: block; font-size: 11px; color: var(--suave); font-weight: 600; text-transform: uppercase; }
+  .turno span { color: var(--suave); font-size: 14px; }
+  .mas { text-align: center; font-size: 14px; margin-top: -4px; } .mas a { color: var(--azul); }
 </style>
 </head>
 <body>
@@ -55,19 +69,10 @@
   <div class="sub" id="subtitulo"></div>
   <div class="aviso error" id="fatal"></div>
 
-  <!-- Entrar con PIN -->
-  <section id="entrar" class="oculto">
-    <div class="caja">
-      Escribe tu PIN para entrar. Este móvil lo recordará.
-      <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
-      <button id="btnEntrar">Entrar</button>
-      <div class="aviso" id="avisoEntrar"></div>
-    </div>
-  </section>
-
   <!-- Inicio -->
   <section id="inicio" class="oculto">
-    <a class="estado" href="mizona.html?v=fichar">
+    <div id="bloqueMiZona">
+    <a class="estado" href="mizona.html">
       <div class="reloj" id="reloj">--:--</div>
       <div class="txt" id="estadoFichaje">Cargando…</div>
       <div class="ir">Fichar</div>
@@ -75,20 +80,28 @@
 
     <h2>Mi zona</h2>
     <div class="rejilla">
-      <a class="mod" href="mizona.html?v=ausencias"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <a class="mod" href="mizona.html#ausencias"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         <b>Ausencias</b><span>Vacaciones y permisos</span><em class="globo oculto" id="gAus"></em></a>
-      <a class="mod" href="mizona.html?v=nominas"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h7"/></svg>
+      <a class="mod" href="mizona.html#nominas"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h7"/></svg>
         <b>Nóminas</b><span>Tus recibos de salario</span><em class="globo oculto" id="gDoc"></em></a>
-      <a class="mod" href="mizona.html?v=gastos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <a class="mod" href="mizona.html#gastos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
         <b>Gastos</b><span>Foto de tickets y facturas</span></a>
-      <a class="mod" href="mizona.html?v=documentos"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <a class="mod" href="mizona.html#documentos"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <b>Documentos</b><span>Contrato y perfil</span></a>
     </div>
+    </div>
+
+    <div class="caja oculto" id="sinModulos">Todavía no tienes ningún apartado asignado. Habla con el club.</div>
+
+    <div id="bloqueTurnos" class="oculto"><h2>Mis próximos turnos</h2><div id="listaTurnos"></div></div>
 
     <div id="bloqueClub" class="oculto">
-      <h2>Club</h2>
+      <h2 id="tituloClub">Club</h2>
       <div class="rejilla" id="modulosClub"></div>
     </div>
+
+    <div id="bloqueAnuncios" class="oculto"><h2>Anuncios del club</h2><div id="listaAnuncios"></div>
+      <div class="mas oculto" id="masAnuncios"><a href="#">Ver todos los anuncios</a></div></div>
 
     <div class="consejo oculto" id="consejo">
       <b>Instala CEPA en tu móvil.</b> En iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.
@@ -104,10 +117,6 @@ const SUPABASE_URL = "https://jwxcwypuvqzzjtljhlhz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_oroyxAbhQmwyRjRmUZ92Jg_7nmSYGd8";
 const API_URL      = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";
 // Módulos del club que aparecen en «Club» si el trabajador los tiene en el panel
-const MODULOS_CLUB = {
-  entrenamientos: { titulo: 'Entrenamientos', texto: 'Tus grupos, deportistas, barcos y espacios', enlace: 'entrenamientos.html',
-    icono: '<path d="M2 16c3 0 3-2 6-2s3 2 6 2 3-2 6-2"/><path d="M2 20c3 0 3-2 6-2s3 2 6 2 3-2 6-2"/><path d="M7 11l3-6 4 3 3-4"/>' }
-};
 // ===========================
 
 const $ = (id) => document.getElementById(id);
@@ -131,7 +140,7 @@ async function api(accion, datos) {
   if (!r.ok) throw new Error('No se ha podido conectar con el club');
   const j = await r.json();
   if (!j.ok) {
-    if (j.error === 'SESION') { SESION = null; guardado.poner('mizona_sesion', null); mostrarEntrar(); throw new Error('Vuelve a escribir tu PIN'); }
+    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrarConEnlace(); return api(accion, datos); }
     throw new Error(j.error);
   }
   return j;
@@ -144,25 +153,19 @@ async function rpc(nombre, datos) {
   return r.json();
 }
 
-function mostrarEntrar() { $('inicio').classList.add('oculto'); $('entrar').classList.remove('oculto'); $('saludo').textContent = 'Hola'; $('subtitulo').textContent = ''; }
-
-$('btnEntrar').addEventListener('click', async () => {
-  const pin = $('pin').value.trim();
-  if (!/^\d{4,6}$/.test(pin)) { $('avisoEntrar').textContent = 'Escribe tu PIN (4 a 6 cifras).'; $('avisoEntrar').className = 'aviso error'; return; }
-  $('btnEntrar').disabled = true; $('avisoEntrar').textContent = 'Comprobando…'; $('avisoEntrar').className = 'aviso';
-  try {
-    const r = await api('entrar', { token: TOKEN, pin });
-    SESION = r.sesion; guardado.poner('mizona_sesion', SESION); $('pin').value = '';
-    await cargar();
-  } catch (e) { $('avisoEntrar').textContent = e.message; $('avisoEntrar').className = 'aviso error'; }
-  finally { $('btnEntrar').disabled = false; }
-});
+// Sin PIN: con el enlace personal se abre la sesión directamente
+async function entrarConEnlace() {
+  const r = await api('entrar', { token: TOKEN });
+  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+}
 
 $('salir').addEventListener('click', async (ev) => {
   ev.preventDefault();
-  if (!confirm('¿Cerrar la sesión en este móvil? Para volver a entrar necesitarás tu PIN.')) return;
+  if (!confirm('¿Cerrar la sesión en este móvil? Para volver a entrar tendrás que abrir de nuevo tu enlace personal.')) return;
   try { await api('salir'); } catch (e) {}
-  SESION = null; guardado.poner('mizona_sesion', null); mostrarEntrar();
+  SESION = null; guardado.poner('mizona_sesion', null);
+  guardado.poner('fichar_token', null);
+  location.href = location.pathname;
 });
 
 function pintarReloj() { $('reloj').textContent = new Date().toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' }); }
@@ -182,18 +185,56 @@ async function cargarFichaje() {
 
 async function cargar() {
   const d = await api('inicio');
-  $('entrar').classList.add('oculto'); $('inicio').classList.remove('oculto');
+  $('inicio').classList.remove('oculto');
   $('saludo').textContent = 'Hola, ' + d.nombre.split(' ')[0];
   $('subtitulo').textContent = d.puesto || '';
   const globo = (id, n) => { $(id).textContent = n; $(id).classList.toggle('oculto', !n); };
   globo('gAus', d.avisos.ausenciasPendientes); globo('gDoc', d.avisos.documentosNuevos);
-  const club = d.modulos.filter((m) => MODULOS_CLUB[m]);
+  const trabajador = d.tipo !== 'colaborador';
+  $('bloqueMiZona').classList.toggle('oculto', !trabajador);
+  if (!trabajador) $('subtitulo').textContent = d.puesto || 'Colaborador del club';
+  // Herramientas que el club le ha dado de alta en el panel (Usuarios y app CEPA)
+  const club = d.herramientas || [];
+  $('sinModulos').classList.toggle('oculto', trabajador || club.length > 0);
   $('bloqueClub').classList.toggle('oculto', !club.length);
-  $('modulosClub').innerHTML = club.map((m) => { const x = MODULOS_CLUB[m];
-    return `<a class="mod ancho" href="${x.enlace}"><svg viewBox="0 0 24 24">${x.icono}</svg><div><b>${esc(x.titulo)}</b><span>${esc(x.texto)}</span></div></a>`; }).join('');
+  $('modulosClub').innerHTML = club.map((x) => `<a class="mod ancho" href="${esc(x.url || '#')}"><svg viewBox="0 0 24 24">${x.icono || '<rect x="4" y="4" width="16" height="16" rx="3"/>'}</svg>
+    <div><b>${esc(x.nombre)}</b><span>${esc(x.descripcion || '')}</span></div></a>`).join('');
+  pintarTurnos(d.turnos || []);
+  pintarAnuncios(d.anuncios || [], d.anunciosSinLeer);
   const instalada = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
   $('consejo').classList.toggle('oculto', !!instalada);
 }
+
+const DIAS_S = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
+const MES_S = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const fCorta = (f) => `${Number(f.slice(8, 10))} ${MES_S[Number(f.slice(5, 7)) - 1]}`;
+function pintarTurnos(l) {
+  $('bloqueTurnos').classList.toggle('oculto', !l.length);
+  $('listaTurnos').innerHTML = l.slice(0, 5).map((t) => { const d = new Date(t.fecha + 'T12:00:00');
+    return `<div class="turno" style="--c:${esc(t.color)}"><div class="f">${d.getDate()}<small>${DIAS_S[(d.getDay() + 6) % 7]}</small></div>
+      <div><b>${esc(t.nombre)}</b><br><span>${t.inicio ? esc(t.inicio + ' – ' + t.fin) : esc(t.horas + ' h')}${t.nota ? ' · ' + esc(t.nota) : ''}</span></div></div>`; }).join('');
+}
+let ANUNCIOS = [];
+function tarjetaAnuncio(a) {
+  return `<a class="anuncio" href="#" data-a="${a.id}">${a.leido ? '' : '<span class="nuevo">Nuevo</span>'}${a.imagen ? `<img src="${esc(a.imagen)}" alt="" loading="lazy">` : ''}
+    <div><small>${fCorta(a.fecha)}${a.es_evento && a.inicio ? `<span class="evento">📅 ${fCorta(a.inicio)} · ${a.inicio.slice(11)}</span>` : ''}</small>
+    <b>${esc(a.titulo)}</b><p>${esc(a.contenido)}${a.lugar ? '\n📍 ' + esc(a.lugar) : ''}</p></div></a>`;
+}
+function pintarAnuncios(l, sinLeer) {
+  ANUNCIOS = l;
+  $('bloqueAnuncios').classList.toggle('oculto', !l.length);
+  $('listaAnuncios').innerHTML = l.map(tarjetaAnuncio).join('');
+  $('masAnuncios').classList.toggle('oculto', l.length < 3);
+}
+$('listaAnuncios').addEventListener('click', (ev) => {
+  const a = ev.target.closest('.anuncio'); if (!a) return;
+  ev.preventDefault(); a.classList.toggle('abierto');
+  const n = a.querySelector('.nuevo'); if (n) { n.remove(); api('leerAnuncio', { id: Number(a.dataset.a) }).catch(() => {}); }
+});
+$('masAnuncios').addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  try { const r = await api('anuncios'); $('listaAnuncios').innerHTML = r.anuncios.map(tarjetaAnuncio).join(''); $('masAnuncios').classList.add('oculto'); } catch (e) {}
+});
 
 (async function () {
   if (!TOKEN) {
@@ -201,8 +242,10 @@ async function cargar() {
     return;
   }
   cargarFichaje();
-  if (!SESION) return mostrarEntrar();
-  try { await cargar(); } catch (e) { if (SESION) $('fatal').textContent = e.message; }
+  try {
+    if (!SESION) await entrarConEnlace();
+    await cargar();
+  } catch (e) { $('fatal').textContent = e.message; }
 })();
 window.addEventListener('pageshow', (e) => { if (e.persisted && SESION) { cargar().catch(() => {}); cargarFichaje(); } });
 </script>

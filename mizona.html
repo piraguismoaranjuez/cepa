@@ -3,194 +3,344 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f3d4c">
+<meta name="theme-color" content="#1c2a44">
 <meta name="robots" content="noindex">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CEPA">
 <link rel="apple-touch-icon" href="icono-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
 <title>Mi zona · CEPA</title>
 <style>
   :root {
-    --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #d9d3c7; --blanco: #fff;
-    --agua: #0f3d4c; --entrada: #1f7a5a; --pausa: #b7791f; --salida: #a33b2b;
+    --navy: #1c2a44; --navy2: #24375a; --navy3: #2d4470; --blanco: #fff; --fondo: #f5f6f8; --gris: #eef0f4;
+    --tinta: #1b2330; --suave: #6b7483; --linea: #e3e6ec; --azul: #3462d0; --azulc: #e6edfb;
+    --verde: #2fa36b; --ambar: #e3b341; --rojo: #c8392b;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body { margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta);
-         font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 480px; margin: 0 auto; padding: 22px 18px calc(96px + env(safe-area-inset-bottom)); }
-  .marca { font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--suave); }
-  h1 { font-size: 27px; margin: 4px 0 0; }
-  h2 { font-size: 15px; color: var(--suave); font-weight: 650; margin: 26px 0 8px; }
-  .reloj { font-variant-numeric: tabular-nums; font-size: 42px; font-weight: 700; color: var(--agua); margin: 14px 0 0; }
-  .fecha { color: var(--suave); font-size: 15px; }
-  .caja { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 14px 16px; margin: 14px 0; }
-  .caja b { font-weight: 650; }
-  label { display: block; font-size: 14px; color: var(--suave); margin: 14px 0 6px; }
-  input, select, textarea { width: 100%; font: inherit; padding: 12px; border-radius: 12px; border: 1px solid var(--linea); background: #fff; color: var(--tinta); }
-  input.pin { font-size: 26px; letter-spacing: .4em; text-align: center; }
-  textarea { min-height: 70px; }
-  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  button { font: inherit; font-weight: 650; border: 0; border-radius: 14px; padding: 15px 12px; color: #fff; background: var(--agua); cursor: pointer; width: 100%; }
-  button[disabled] { opacity: .3; }
-  button.sec { background: #fff; color: var(--agua); border: 1px solid var(--linea); }
-  button.mini { width: auto; padding: 7px 12px; font-size: 14px; border-radius: 10px; }
-  .b-entrada { background: var(--entrada); grid-column: 1 / -1; padding: 18px; }
-  .b-salida { background: var(--salida); grid-column: 1 / -1; padding: 18px; }
-  .b-inicio_pausa, .b-fin_pausa { background: var(--pausa); padding: 18px; }
-  .aviso { margin-top: 12px; min-height: 22px; font-size: 15px; }
-  .ok { color: var(--entrada); } .error { color: var(--salida); }
-  ul.lista { list-style: none; padding: 0; margin: 0; background: #fff; border: 1px solid var(--linea); border-radius: 14px; overflow: hidden; }
-  ul.lista li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid var(--linea); font-size: 15px; }
-  ul.lista li:first-child { border-top: 0; }
-  .dcha { color: var(--suave); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-  .sub { display: block; font-size: 13px; color: var(--suave); }
-  .vacio { padding: 14px; color: var(--suave); font-size: 14px; }
-  .chip { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 99px; background: #eee9df; color: var(--tinta); }
-  .chip.verde { background: #dcefe6; color: var(--entrada); } .chip.ambar { background: #f6e8cf; color: #8a5a12; } .chip.rojo { background: #f3dcd8; color: var(--salida); }
-  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 6px; }
-  .cifras b { display: block; font-size: 26px; color: var(--agua); }
-  .cifras span { font-size: 12.5px; color: var(--suave); }
-  .pie { margin-top: 26px; font-size: 12.5px; line-height: 1.5; color: var(--suave); }
+  html, body { margin: 0; background: var(--navy); color: var(--tinta);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  button { font: inherit; cursor: pointer; }
   .oculto { display: none !important; }
-  a.volver { display: inline-block; color: var(--agua); text-decoration: none; font-weight: 650; font-size: 15px; margin-bottom: 10px; }
-  nav { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--linea);
-        display: flex; justify-content: center; padding-bottom: env(safe-area-inset-bottom); z-index: 5; }
-  nav .tabs { display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 480px; }
-  nav button { background: none; color: var(--suave); border-radius: 0; padding: 9px 2px 10px; font-size: 11.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-  nav button svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-  nav button.activa { color: var(--agua); }
-  .punto { width: 7px; height: 7px; background: var(--salida); border-radius: 50%; display: inline-block; margin-left: 4px; vertical-align: middle; }
-  .foto { width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid var(--linea); }
-  a.boton { display: block; text-align: center; text-decoration: none; font-weight: 650; background: var(--entrada); color: #fff; padding: 9px 12px; border-radius: 10px; font-size: 14px; }
+  .vista { min-height: 100vh; }
+
+  /* Cabecera oscura */
+  .cab { background: var(--navy); color: #fff; padding: calc(14px + env(safe-area-inset-top)) 20px 0; }
+  .barra { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+  .barra img { width: 36px; height: 36px; border-radius: 8px; background: #fff; object-fit: contain; }
+  .barra .club { flex: 1; font-weight: 600; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .volver { background: none; border: 0; color: #fff; padding: 6px 4px; display: flex; align-items: center; gap: 4px; font-size: 16px; }
+  .volver svg { width: 26px; height: 26px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .cab h1 { font-size: 32px; font-weight: 500; margin: 16px 0 18px; }
+
+  /* Tarjeta de fichaje */
+  .fichaje { background: #141f35; border-radius: 20px; padding: 18px 20px 20px; margin-bottom: -40px; position: relative; z-index: 2; }
+  .fichaje.activa { background: var(--navy3); }
+  .estadoF { font-size: 15px; color: #d6dbe6; }
+  .estadoF b { font-weight: 600; }
+  .estadoF .verde { color: #6fd39d; } .estadoF .ambar { color: var(--ambar); }
+  .filaF { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+  .contador { font-size: 28px; white-space: nowrap; min-width: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: #fff; display: flex; align-items: center; gap: 10px; }
+  .punto { width: 12px; height: 12px; border-radius: 50%; background: var(--verde); }
+  .punto.ambar { background: var(--ambar); }
+  .botonesF { display: flex; gap: 8px; flex: none; }
+  .bF { width: 54px; height: 54px; border-radius: 16px; border: 0; display: grid; place-items: center; background: #3a5185; }
+  .bF.blanco { background: #fff; } .bF.oscuro { background: #1a253b; }
+  .bF svg { width: 26px; height: 26px; }
+  .bFichar { width: 100%; margin-top: 18px; background: #fff; color: var(--azul); border: 0; border-radius: 16px; padding: 17px; font-weight: 600; font-size: 19px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .bFichar svg { width: 20px; height: 20px; fill: var(--azul); }
+  .linea { height: 6px; border-radius: 99px; background: rgba(255,255,255,.12); margin-top: 18px; overflow: hidden; }
+  .linea div { height: 100%; background: var(--verde); border-radius: 99px; width: 0; transition: width .4s; }
+  .horasLinea { display: flex; justify-content: space-between; font-size: 13px; color: #b9c1d1; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .avisoF { font-size: 14px; margin-top: 12px; color: #ffd27a; min-height: 0; }
+
+  /* Hoja blanca */
+  .hoja { background: var(--blanco); border-radius: 26px 26px 0 0; padding: 62px 20px calc(40px + env(safe-area-inset-bottom)); min-height: 60vh; position: relative; z-index: 1; }
+  .hoja.sinTarjeta { padding-top: 26px; }
+  h2.sec { font-size: 22px; font-weight: 500; margin: 26px 0 14px; display: flex; align-items: center; gap: 6px; }
+  h2.sec:first-child { margin-top: 0; }
+  h2.sec svg { width: 22px; height: 22px; stroke: var(--tinta); fill: none; stroke-width: 2; }
+  .gris { background: var(--fondo); border-radius: 16px; padding: 18px 20px; }
+  .gris b { display: block; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+  .gris span { color: var(--suave); font-size: 15px; }
+  .bLinea { width: 100%; background: #fff; border: 1.5px solid var(--linea); border-radius: 16px; padding: 16px; font-size: 18px; color: var(--suave); margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .bAzul { width: 100%; background: var(--azul); color: #fff; border: 0; border-radius: 16px; padding: 16px; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .mini { color: var(--suave); font-size: 15px; margin: 18px 0 8px; }
+  .itemAus { display: flex; gap: 16px; align-items: center; }
+  .icoCaja { width: 64px; height: 64px; border-radius: 12px; background: var(--fondo); display: grid; place-items: center; flex: none; }
+  .icoCaja svg { width: 30px; height: 30px; stroke: var(--tinta); fill: none; stroke-width: 2; }
+  .itemAus b { font-size: 17px; font-weight: 600; display: block; }
+  .itemAus span { color: var(--suave); font-size: 14.5px; }
+  .tarjNom { display: flex; align-items: center; gap: 16px; background: var(--fondo); border-radius: 16px; padding: 16px 18px; border: 0; width: 100%; text-align: left; color: inherit; }
+  .tarjNom .icoCirc { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: grid; place-items: center; flex: none; }
+  .tarjNom svg { width: 30px; height: 30px; stroke: var(--tinta); fill: none; stroke-width: 1.8; }
+  .tarjNom div b { display: block; font-weight: 600; } .tarjNom div span { color: var(--suave); font-size: 14px; }
+
+  .accesos { background: var(--fondo); border-radius: 22px; padding: 18px 16px 6px; margin-top: 26px; }
+  .accesos h3 { font-size: 17px; font-weight: 500; margin: 0 4px 10px; }
+  .acceso { display: flex; align-items: center; gap: 16px; padding: 12px 4px; border: 0; background: none; width: 100%; text-align: left; color: inherit; }
+  .acceso .ico { width: 52px; height: 52px; border-radius: 50%; background: var(--azulc); display: grid; place-items: center; flex: none; }
+  .acceso .ico svg { width: 24px; height: 24px; stroke: var(--azul); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .acceso div { flex: 1; } .acceso b { display: block; font-weight: 500; font-size: 18px; } .acceso span { color: var(--suave); font-size: 14.5px; }
+  .acceso .flecha { width: 20px; height: 20px; stroke: var(--suave); fill: none; stroke-width: 2; }
+  .acceso .globo, .globo { color: #fff !important; font-size: 12px !important; display: inline-block;
+    background: var(--rojo); color: #fff; font-size: 12px; font-weight: 700; border-radius: 99px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; font-weight: 700; }
+
+  /* Subpáginas blancas */
+  .cabBlanca { background: #fff; padding: calc(14px + env(safe-area-inset-top)) 16px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--linea); position: sticky; top: 0; z-index: 3; }
+  .cabBlanca .volver { color: var(--tinta); }
+  .cabBlanca h1 { font-size: 26px; font-weight: 600; margin: 0; }
+  .pag { background: #fff; min-height: calc(100vh - 70px); padding: 22px 20px 40px; }
+  .avatar { width: 128px; height: 128px; border-radius: 50%; background: #4497df; color: #fff; display: grid; place-items: center; font-size: 52px; margin: 10px auto 14px; font-weight: 500; }
+  .nombreP { text-align: center; font-size: 22px; font-weight: 500; margin-bottom: 22px; }
+  .etq { color: var(--suave); font-size: 14px; letter-spacing: .04em; text-transform: uppercase; margin: 18px 0 8px; font-weight: 600; }
+  .dato { display: flex; align-items: center; gap: 14px; padding: 10px 0; font-size: 17px; width: 100%; background: none; border: 0; text-align: left; color: inherit; }
+  .dato svg { width: 22px; height: 22px; stroke: var(--tinta); fill: none; stroke-width: 1.8; flex: none; }
+  .dato.vacio { color: var(--suave); }
+  hr { border: 0; border-top: 1px solid var(--linea); margin: 14px 0; }
+
+  /* Ausencias */
+  .vacTit { display: flex; justify-content: space-between; color: #c1c8d6; font-size: 15px; margin-top: 8px; }
+  .vacGrande { font-size: 34px; font-weight: 500; margin: 6px 0 14px; color: #fff; }
+  .barraVac { height: 10px; border-radius: 99px; background: #d0d5df; display: flex; overflow: hidden; }
+  .barraVac i { display: block; height: 100%; }
+  .leyenda { display: flex; gap: 16px; flex-wrap: wrap; font-size: 15px; color: #c1c8d6; margin: 12px 0 18px; }
+  .leyenda span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
+  .calendario { background: var(--fondo); border-radius: 20px; padding: 16px; }
+  .calNav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .calNav b { font-size: 19px; font-weight: 500; }
+  .calNav button { background: none; border: 0; padding: 8px 12px; }
+  .calNav svg { width: 22px; height: 22px; stroke: var(--tinta); fill: none; stroke-width: 2; }
+  .rejCal { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; row-gap: 8px; }
+  .rejCal .ds { color: var(--suave); font-size: 14px; padding-bottom: 4px; }
+  .rejCal .d { width: 40px; height: 40px; line-height: 40px; margin: 0 auto; border-radius: 50%; font-size: 16px; }
+  .rejCal .fuera { color: #b5bcc8; }
+  .rejCal .hoy { box-shadow: inset 0 0 0 2px var(--azul); color: var(--azul); }
+  .rejCal .aprob { background: #d3ddf6; }
+  .rejCal .pend { box-shadow: inset 0 0 0 2px var(--azul); border: 0; outline: 2px dashed #fff; outline-offset: -2px; }
+  .rejCal .finde { color: #8b93a1; }
+  .leyCal { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--suave); border-top: 1px solid var(--linea); margin-top: 12px; padding-top: 12px; }
+  .leyCal i { display: inline-block; width: 16px; height: 16px; border-radius: 50%; vertical-align: -3px; margin-right: 6px; }
+
+  ul.lista { list-style: none; padding: 0; margin: 0; }
+  ul.lista li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 2px; border-bottom: 1px solid var(--linea); }
+  ul.lista li:last-child { border-bottom: 0; }
+  .sub { display: block; color: var(--suave); font-size: 14px; }
+  .dcha { text-align: right; color: var(--suave); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .chip { display: inline-block; font-size: 12.5px; padding: 2px 10px; border-radius: 99px; background: var(--gris); }
+  .chip.verde { background: #def3e8; color: #1c7a4c; } .chip.ambar { background: #fbefcf; color: #8a6510; } .chip.rojo { background: #f8dcd8; color: var(--rojo); }
+  .bChico { border: 1px solid var(--linea); background: #fff; border-radius: 10px; padding: 7px 12px; font-size: 14px; color: var(--azul); font-weight: 600; }
+  a.bChico { text-decoration: none; display: inline-block; background: var(--azul); color: #fff; border-color: var(--azul); }
+  .resSemana { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+  .resSemana div { background: var(--fondo); border-radius: 16px; padding: 14px 16px; }
+  .resSemana b { display: block; font-size: 24px; font-weight: 600; }
+  .resSemana span { color: var(--suave); font-size: 14px; }
+  .vacio { color: var(--suave); font-size: 15px; padding: 14px 0; }
+  .nota { color: var(--suave); font-size: 13.5px; line-height: 1.5; margin-top: 18px; }
+
+  /* Hoja inferior (formularios) */
+  .modal { position: fixed; inset: 0; background: rgba(10,16,28,.5); display: flex; align-items: flex-end; z-index: 20; }
+  .sheet { background: #fff; width: 100%; max-width: 560px; margin: 0 auto; border-radius: 22px 22px 0 0; padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); max-height: 92vh; overflow: auto; }
+  .sheet h2 { margin: 0 0 14px; font-size: 21px; font-weight: 600; }
+  .sheet label { display: block; color: var(--suave); font-size: 14px; margin: 12px 0 6px; }
+  .sheet input, .sheet select, .sheet textarea { width: 100%; font: inherit; padding: 13px; border: 1px solid var(--linea); border-radius: 12px; background: #fff; color: var(--tinta); }
+  .sheet .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sheet .acciones { display: grid; gap: 10px; margin-top: 18px; }
+  .msg { font-size: 15px; margin-top: 10px; min-height: 20px; }
+  .msg.error { color: var(--rojo); } .msg.ok { color: #1c7a4c; }
+  .foto { width: 100%; border-radius: 12px; margin-top: 10px; }
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom)); background: #1b2330; color: #fff; padding: 13px 16px; border-radius: 14px; z-index: 30; max-width: 528px; margin: 0 auto; font-size: 15px; }
 </style>
 </head>
 <body>
-<main>
-  <a href="./" class="volver">‹ CEPA</a>
-  <div class="marca">Mi zona</div>
-  <h1 id="saludo">Cargando…</h1>
-  <div class="aviso error" id="fatal"></div>
 
-  <!-- ============ FICHAR ============ -->
-  <section id="v-fichar" class="vista oculto">
-    <div class="reloj" id="reloj">--:--</div>
-    <div class="fecha" id="fecha"></div>
-    <div class="caja" id="estado"></div>
-    <label for="pin">Tu PIN</label>
-    <input id="pin" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
-    <div class="botones">
-      <button class="b-entrada" data-tipo="entrada">Entrada</button>
-      <button class="b-inicio_pausa" data-tipo="inicio_pausa">Iniciar pausa</button>
-      <button class="b-fin_pausa" data-tipo="fin_pausa">Volver de pausa</button>
-      <button class="b-salida" data-tipo="salida">Salida</button>
+<!-- ===================== MI ZONA (portada) ===================== -->
+<section class="vista" id="v-inicio">
+  <div class="cab">
+    <div class="barra">
+      <button class="volver" onclick="location.href='./'" aria-label="Volver a CEPA"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <img src="icono-192.png" alt="">
+      <div class="club">Club Escuela de Piragüismo Aranjuez</div>
     </div>
-    <div class="aviso" id="avisoFichar" role="status"></div>
-    <h2>Hoy</h2>
-    <ul class="lista" id="listaHoy"></ul>
-    <h2>Mis últimas jornadas</h2>
-    <ul class="lista" id="listaJornadas"><li class="vacio">Entra con tu PIN para verlas.</li></ul>
-    <p class="pie">La hora la registra el servidor. Al fichar se guarda tu ubicación en ese momento,
-      solo para acreditar dónde se registró la jornada; no se te localiza en ningún otro momento.</p>
-  </section>
+    <h1>Mi zona</h1>
+    <div class="fichaje" id="tarjetaFichaje">
+      <div class="estadoF" id="estadoF">Cargando…</div>
+      <div class="filaF">
+        <div class="contador"><span id="contador">0h 00m 00s</span><i class="punto oculto" id="puntoF"></i></div>
+        <div class="botonesF" id="botonesF"></div>
+      </div>
+      <button class="bFichar oculto" id="bFichar"><svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>Fichar</button>
+      <div id="lineaDia" class="oculto"><div class="linea"><div id="lineaRelleno"></div></div>
+        <div class="horasLinea"><span id="hIni"></span><span id="hMed"></span><span id="hFin"></span></div></div>
+      <div class="avisoF" id="avisoF"></div>
+    </div>
+  </div>
+  <div class="hoja">
+    <h2 class="sec" data-ir="ausencias">Ausencias <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></h2>
+    <div class="gris" id="resumenVac"><b>…</b><span></span></div>
+    <button class="bLinea" data-accion="solicitar">＋ Solicitar ausencia</button>
+    <div class="mini">Próximas ausencias</div>
+    <div id="proximas"></div>
 
-  <!-- ============ ENTRAR (PIN para el resto de apartados) ============ -->
-  <section id="v-entrar" class="vista oculto">
-    <div class="caja">Para ver tus nóminas, vacaciones y documentos, escribe tu PIN una vez. Este móvil lo recordará.</div>
-    <label for="pinEntrar">Tu PIN</label>
-    <input id="pinEntrar" class="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••">
-    <div style="margin-top:14px"><button id="btnEntrar">Entrar</button></div>
-    <div class="aviso" id="avisoEntrar"></div>
-  </section>
+    <h2 class="sec" data-ir="nominas">Última nómina <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></h2>
+    <div id="ultimaNomina"></div>
 
-  <!-- ============ AUSENCIAS ============ -->
-  <section id="v-ausencias" class="vista oculto">
-    <h2 style="margin-top:18px">Vacaciones <span id="vacAnio"></span></h2>
-    <div class="caja cifras">
-      <div><b id="vacDisp">–</b><span>disponibles</span></div>
-      <div><b id="vacUsad">–</b><span>disfrutados</span></div>
-      <div><b id="vacPend">–</b><span>pendientes de aprobar</span></div>
+    <div class="accesos">
+      <h3>Otros accesos</h3>
+      <button class="acceso" data-ir="perfil"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.2-2 3.2-3 5.5-3s4.3 1 5.5 3"/></svg></span>
+        <div><b>Mi perfil</b><span>Datos personales</span></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="acceso" data-ir="control"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <div><b>Control horario</b><span>Tus jornadas y horas</span></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="acceso" data-ir="nominas"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/></svg></span>
+        <div><b>Nóminas<span class="globo oculto" id="gNom"></span></b></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="acceso" data-ir="ausencias"><span class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M12 13v4M10 15h4"/></svg></span>
+        <div><b>Ausencias</b></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="acceso" data-ir="documentos"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+        <div><b>Documentos<span class="globo oculto" id="gDoc"></span></b><span>Contrato y otros documentos</span></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="acceso" data-ir="gastos"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+        <div><b>Gastos</b><span>Foto de tickets y facturas</span></div><svg class="flecha" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
-    <p class="pie" style="margin-top:0" id="vacNota"></p>
-    <h2>Solicitar ausencia</h2>
-    <div class="caja">
-      <label style="margin-top:0">Tipo <select id="ausTipo"></select></label>
-      <label>Desde <input type="date" id="ausDesde"></label>
-      <label>Hasta <input type="date" id="ausHasta"></label>
-      <label>Comentario (opcional) <textarea id="ausComentario" maxlength="500"></textarea></label>
-      <div style="margin-top:14px"><button id="btnAusencia">Enviar solicitud</button></div>
-      <div class="aviso" id="avisoAus"></div>
+  </div>
+</section>
+
+<!-- ===================== MI PERFIL ===================== -->
+<section class="vista oculto" id="v-perfil">
+  <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Mi perfil</h1></div>
+  <div class="pag">
+    <div class="avatar" id="avatar">··</div>
+    <div class="nombreP" id="pNombre"></div>
+    <div class="etq">Detalles</div>
+    <div class="dato"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="5" rx="1"/><rect x="3" y="16" width="6" height="5" rx="1"/><rect x="15" y="16" width="6" height="5" rx="1"/><path d="M12 8v4M6 16v-2h12v2"/></svg><span id="pPuesto"></span></div>
+    <div class="dato"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg>Club Escuela de Piragüismo Aranjuez CDB</div>
+    <hr>
+    <div class="etq">Contacto</div>
+    <button class="dato" id="pTelefono"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><span></span></button>
+    <div class="dato"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span id="pEmail"></span></div>
+    <p class="nota">Si tu nombre, puesto o correo no son correctos, díselo al club.</p>
+  </div>
+</section>
+
+<!-- ===================== CONTROL HORARIO ===================== -->
+<section class="vista oculto" id="v-control">
+  <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Control horario</h1></div>
+  <div class="pag">
+    <div class="resSemana">
+      <div><b id="hSemana">–</b><span>esta semana</span></div>
+      <div><b id="hContrato">–</b><span>de contrato a la semana</span></div>
     </div>
-    <h2>Mis solicitudes</h2>
+    <div id="cajaTurnos" class="oculto"><div class="etq">Mis próximos turnos</div><ul class="lista" id="listaTurnosMZ"></ul></div>
+    <div class="etq">Últimas jornadas</div>
+    <ul class="lista" id="listaJornadas"></ul>
+    <p class="nota">La hora de cada fichaje la registra el servidor. Al fichar se guarda tu ubicación en ese momento,
+      solo para acreditar dónde se registró la jornada; no se te localiza en ningún otro momento.
+      Si te olvidaste de fichar o hay un error, díselo al club para que lo corrija.</p>
+  </div>
+</section>
+
+<!-- ===================== AUSENCIAS ===================== -->
+<section class="vista oculto" id="v-ausencias">
+  <div class="cab" style="padding-bottom:22px">
+    <div class="barra"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <div class="club" style="font-size:26px;font-weight:500">Ausencias</div></div>
+    <div class="vacTit"><span id="vacTit">Vacaciones</span><span id="vacTotal"></span></div>
+    <div class="vacGrande" id="vacGrande">–</div>
+    <div class="barraVac" id="barraVac"></div>
+    <div class="leyenda"><span style="--c:#4f7be3" id="lDisp"></span><span style="--c:var(--ambar)" id="lPend"></span><span style="--c:#d0d5df" id="lUsad"></span></div>
+    <button class="bAzul" data-accion="solicitar">＋ Solicitar ausencia</button>
+  </div>
+  <div class="hoja sinTarjeta">
+    <div class="calendario">
+      <div class="calNav"><button id="calAnt" aria-label="Mes anterior"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <b id="calMes"></b><button id="calSig" aria-label="Mes siguiente"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>
+      <div class="rejCal" id="rejCal"></div>
+      <div class="leyCal"><span><i style="background:#d3ddf6"></i>Aprobada</span><span><i style="box-shadow:inset 0 0 0 2px var(--azul)"></i>Pendiente</span></div>
+    </div>
+    <h2 class="sec" style="margin-top:28px">Mis solicitudes</h2>
     <ul class="lista" id="listaAus"></ul>
-  </section>
+  </div>
+</section>
 
-  <!-- ============ NÓMINAS ============ -->
-  <section id="v-nominas" class="vista oculto">
-    <h2 style="margin-top:18px">Mis nóminas</h2>
-    <ul class="lista" id="listaNominas"></ul>
-  </section>
+<!-- ===================== NÓMINAS ===================== -->
+<section class="vista oculto" id="v-nominas">
+  <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Nóminas</h1></div>
+  <div class="pag"><ul class="lista" id="listaNominas"></ul></div>
+</section>
 
-  <!-- ============ DOCUMENTOS ============ -->
-  <section id="v-documentos" class="vista oculto">
-    <h2 style="margin-top:18px">Mis documentos</h2>
-    <ul class="lista" id="listaDocs"></ul>
-    <h2>Mi perfil</h2>
-    <ul class="lista" id="perfil"></ul>
-    <div style="margin-top:18px"><button class="sec" id="btnSalir">Cerrar sesión en este móvil</button></div>
-  </section>
+<!-- ===================== DOCUMENTOS ===================== -->
+<section class="vista oculto" id="v-documentos">
+  <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Documentos</h1></div>
+  <div class="pag"><ul class="lista" id="listaDocs"></ul></div>
+</section>
 
-  <!-- ============ GASTOS ============ -->
-  <section id="v-gastos" class="vista oculto">
-    <h2 style="margin-top:18px">Enviar ticket o factura</h2>
-    <div class="caja">
-      Haz una foto del ticket entero, bien iluminado y sin sombras, o elige un PDF. Le llega al club directamente.
-      <label>Foto o PDF <input type="file" id="gArchivo" accept="image/*,application/pdf"></label>
+<!-- ===================== GASTOS ===================== -->
+<section class="vista oculto" id="v-gastos">
+  <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Gastos</h1></div>
+  <div class="pag">
+    <div class="gris"><span>Haz una foto del ticket entero, bien iluminado y sin sombras, o elige un PDF. Le llega al club directamente.</span></div>
+    <div class="sheet" style="padding:0;border-radius:0;max-height:none">
+      <label>Foto o PDF</label><input type="file" id="gArchivo" accept="image/*,application/pdf">
       <img id="gVista" class="foto oculto" alt="Vista previa">
-      <label>¿Qué es? (opcional) <input id="gNota" maxlength="300" placeholder="Gasolina salida a Toledo, material…"></label>
-      <div style="margin-top:14px"><button id="btnGasto">Enviar</button></div>
-      <div class="aviso" id="avisoGasto"></div>
+      <div class="fila2"><div><label>Fecha del ticket</label><input type="date" id="gFecha"></div>
+        <div><label>Importe total (€)</label><input id="gImporte" inputmode="decimal" placeholder="0,00"></div></div>
+      <label>¿Para qué es?</label><select id="gCategoria"></select>
+      <label style="display:flex;align-items:center;gap:10px;margin-top:16px;color:var(--tinta);font-weight:600">
+        <input type="checkbox" id="gFmp" style="width:22px;height:22px;flex:none"> Lo paga la Federación Madrileña</label>
+      <div id="gCajaFmp" class="oculto" style="border-left:3px solid var(--ambar);padding-left:12px;margin-top:6px">
+        <label>Competición</label><select id="gComp"></select>
+        <label>Empresa del ticket</label><input id="gProveedor" maxlength="120" placeholder="E.S. CAMPSA, CARREFOUR, S.A.…">
+        <div class="fila2"><div><label>CIF</label><input id="gCif" maxlength="20" placeholder="B12345678"></div>
+          <div><label>Nº factura / ticket</label><input id="gNumFactura" maxlength="60"></div></div>
+        <label>Concepto</label><input id="gConcepto" maxlength="120" placeholder="Compra combustible viaje, peaje, alojamiento…">
+        <label>Pago</label><select id="gFormaPago"><option value="CEPA">Pagado con la tarjeta / cuenta del club</option>
+          <option value="PAGADO POR EL TRABAJADOR">Lo he pagado yo (hay que devolvérmelo)</option><option value="PENDIENTE PAGO FMP">Pendiente: lo paga directamente la Federación</option></select>
+      </div>
+      <label>Nota (opcional)</label><input id="gNota" maxlength="300" placeholder="Salida a Toledo, lancha 2…">
+      <div class="acciones"><button class="bAzul" id="btnGasto">Enviar</button></div>
+      <div class="msg" id="msgGasto"></div>
     </div>
-    <h2>Enviados</h2>
+    <div class="etq" style="margin-top:26px">Enviados</div>
     <ul class="lista" id="listaGastos"></ul>
-  </section>
-</main>
+  </div>
+</section>
 
-<nav><div class="tabs">
-  <button data-v="fichar" class="activa"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Fichar</button>
-  <button data-v="ausencias"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Ausencias</button>
-  <button data-v="nominas"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h7"/></svg><span>Nóminas<span id="puntoNom" class="punto oculto"></span></span></button>
-  <button data-v="documentos"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Docs<span id="puntoDoc" class="punto oculto"></span></span></button>
-  <button data-v="gastos"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Gastos</button>
-</div></nav>
+<!-- Hoja para solicitar ausencia -->
+<div class="modal oculto" id="modal"><div class="sheet">
+  <h2>Solicitar ausencia</h2>
+  <label>Tipo</label><select id="ausTipo"></select>
+  <label id="lPorHoras" class="oculto" style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="ausPorHoras" style="width:auto"> Solo unas horas de un día</label>
+  <div class="fila2"><div><label id="lDesde">Desde</label><input type="date" id="ausDesde"></div><div id="cajaHasta"><label>Hasta</label><input type="date" id="ausHasta"></div></div>
+  <div class="fila2 oculto" id="cajaHoras"><div><label>De</label><input type="time" id="ausHoraDesde"></div><div><label>A</label><input type="time" id="ausHoraHasta"></div></div>
+  <label>Comentario (opcional)</label><textarea id="ausComentario" rows="2" maxlength="500"></textarea>
+  <div class="msg" id="msgAus"></div>
+  <div class="acciones"><button class="bAzul" id="btnAusencia">Enviar solicitud</button><button class="bLinea" style="margin:0" id="btnCerrar">Cancelar</button></div>
+</div></div>
+
+<div class="toast oculto" id="toast"></div>
 
 <script>
 // ====== CONFIGURACIÓN ======
 const SUPABASE_URL = "https://jwxcwypuvqzzjtljhlhz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_oroyxAbhQmwyRjRmUZ92Jg_7nmSYGd8";
-const API_URL      = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";   // Apps Script «Mi zona · API»
+const API_URL      = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";
 // ===========================
 
 const $ = (id) => document.getElementById(id);
 const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const zona = { timeZone: 'Europe/Madrid' };
-const NOMBRES = { entrada: 'Entrada', inicio_pausa: 'Inicio de pausa', fin_pausa: 'Fin de pausa', salida: 'Salida' };
-const PERMITIDOS = { ninguno: ['entrada'], salida: ['entrada'], entrada: ['inicio_pausa', 'salida'],
-                     fin_pausa: ['inicio_pausa', 'salida'], inicio_pausa: ['fin_pausa'] };
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-
 const guardado = {
   leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
 };
 const TOKEN = (() => {
   const m = location.hash.match(/t=([a-f0-9]{48})/i);
-  if (m) { guardado.poner('fichar_token', m[1]); return m[1]; }   // el enlace se mantiene para «Añadir a pantalla de inicio»
+  if (m) { guardado.poner('fichar_token', m[1]); return m[1]; }
   return guardado.leer('fichar_token');
 })();
 let SESION = guardado.leer('mizona_sesion');
-let DATOS = null;
-let VISTA = 'fichar';
+let DATOS = null, HOY = [], MES = null;
+
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.remove('oculto'); clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.add('oculto'), 3500); }
 
 // ---------- Conexiones ----------
 async function rpc(nombre, datos) {
@@ -205,165 +355,265 @@ async function api(accion, datos) {
   if (!r.ok) throw new Error('No se ha podido conectar con el club');
   const j = await r.json();
   if (!j.ok) {
-    if (j.error === 'SESION') { SESION = null; guardado.poner('mizona_sesion', null); DATOS = null; mostrar(VISTA); throw new Error('Vuelve a escribir tu PIN'); }
+    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrar(); return api(accion, datos); }
     throw new Error(j.error);
   }
   return j;
 }
-async function entrarCon(pin) {
-  const r = await api('entrar', { token: TOKEN, pin });
+async function entrar() {
+  const r = await api('entrar', { token: TOKEN });
   SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
-  await cargarResumen();
 }
-async function cargarResumen() {
-  if (!SESION) return;
-  DATOS = await api('resumen');
-  pintarTodo();
-}
+async function cargarResumen() { DATOS = await api('resumen'); pintarTodo(); }
 
-// ---------- Navegación ----------
-function mostrar(v) {
-  VISTA = v;
-  document.querySelectorAll('nav button').forEach((b) => b.classList.toggle('activa', b.dataset.v === v));
-  const necesitaSesion = v !== 'fichar' && !SESION;
-  document.querySelectorAll('.vista').forEach((s) => s.classList.add('oculto'));
-  $(necesitaSesion ? 'v-entrar' : 'v-' + v).classList.remove('oculto');
+// ---------- Navegación (#perfil, #control, #ausencias…) ----------
+const VISTAS = ['inicio', 'perfil', 'control', 'ausencias', 'nominas', 'documentos', 'gastos'];
+function mostrar() {
+  const v = (location.hash.match(/^#([a-z]+)$/) || [])[1];
+  const vista = VISTAS.includes(v) ? v : 'inicio';
+  VISTAS.forEach((x) => $('v-' + x).classList.toggle('oculto', x !== vista));
+  document.querySelector('meta[name=theme-color]').content = ['inicio', 'ausencias'].includes(vista) ? '#1c2a44' : '#ffffff';
+  document.body.style.background = ['inicio', 'ausencias'].includes(vista) ? '' : '#fff';
   window.scrollTo(0, 0);
 }
-document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => mostrar(b.dataset.v)));
-
-$('btnEntrar').addEventListener('click', async () => {
-  const pin = $('pinEntrar').value.trim();
-  if (!/^\d{4,6}$/.test(pin)) return avisar('avisoEntrar', 'Escribe tu PIN (4 a 6 cifras).', 'error');
-  $('btnEntrar').disabled = true; avisar('avisoEntrar', 'Comprobando…');
-  try { await entrarCon(pin); $('pinEntrar').value = ''; avisar('avisoEntrar', ''); mostrar(VISTA); }
-  catch (e) { avisar('avisoEntrar', e.message, 'error'); }
-  finally { $('btnEntrar').disabled = false; }
-});
-$('btnSalir').addEventListener('click', async () => {
-  try { await api('salir'); } catch (e) {}
-  SESION = null; DATOS = null; guardado.poner('mizona_sesion', null); mostrar('fichar');
+window.addEventListener('hashchange', mostrar);
+document.addEventListener('click', (ev) => {
+  const ir = ev.target.closest('[data-ir]');
+  if (ir) { location.hash = ir.dataset.ir === 'inicio' ? '' : ir.dataset.ir; return; }
+  const acc = ev.target.closest('[data-accion=solicitar]');
+  if (acc) abrirSolicitud();
 });
 
-function avisar(id, texto, clase) { const a = $(id); a.textContent = texto; a.className = 'aviso ' + (clase || ''); }
-const hora = (iso) => new Date(iso).toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' });
-const fechaCorta = (ymd) => { const [a, m, d] = ymd.split('-'); return `${Number(d)} ${MESES[Number(m) - 1].slice(0, 3)} ${a}`; };
-const diaSemana = (ymd) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
-const hhmm = (h) => `${Math.floor(h)} h ${String(Math.round((h % 1) * 60)).padStart(2, '0')} min`;
-
-// ---------- Fichar ----------
-function pintarReloj() {
-  const a = new Date();
-  $('reloj').textContent = a.toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' });
-  $('fecha').textContent = a.toLocaleDateString('es-ES', { ...zona, weekday: 'long', day: 'numeric', month: 'long' });
+// ---------- Fichaje ----------
+const fmtHora = (iso) => new Date(iso).toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' });
+const dos = (n) => String(n).padStart(2, '0');
+function duracion(ms) { const s = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s / 3600)}h ${dos(Math.floor(s / 60) % 60)}m ${dos(s % 60)}s`; }
+function calcular() {
+  let trabajado = 0, desde = null, estado = 'fuera', pausaDesde = null;
+  for (const f of HOY) {
+    const t = new Date(f.momento).getTime();
+    if (f.tipo === 'entrada' || f.tipo === 'fin_pausa') { desde = t; estado = 'trabajando'; pausaDesde = null; }
+    else if (f.tipo === 'inicio_pausa') { if (desde) trabajado += t - desde; desde = null; estado = 'pausa'; pausaDesde = t; }
+    else if (f.tipo === 'salida') { if (desde) trabajado += t - desde; desde = null; estado = 'terminada'; pausaDesde = null; }
+  }
+  if (desde) trabajado += Date.now() - desde;
+  return { trabajado, estado, pausaDesde };
 }
-setInterval(pintarReloj, 1000); pintarReloj();
-
-function pintarHoy(d) {
-  $('saludo').textContent = 'Hola, ' + d.nombre.split(' ')[0];
-  const hoy = d.hoy || [], ult = hoy.length ? hoy[hoy.length - 1] : null, clave = ult ? ult.tipo : 'ninguno';
-  const t = { ninguno: 'Todavía no has fichado hoy.', salida: `Jornada cerrada a las <b>${ult && hora(ult.momento)}</b>.`,
-    entrada: `Trabajando desde las <b>${ult && hora(ult.momento)}</b>.`, fin_pausa: `Trabajando desde las <b>${ult && hora(ult.momento)}</b> (después de la pausa).`,
-    inicio_pausa: `En pausa desde las <b>${ult && hora(ult.momento)}</b>.` };
-  $('estado').innerHTML = t[clave];
-  document.querySelectorAll('button[data-tipo]').forEach((b) => (b.disabled = !PERMITIDOS[clave].includes(b.dataset.tipo)));
-  $('listaHoy').innerHTML = hoy.length ? hoy.map((f) => `<li><span>${NOMBRES[f.tipo]}</span><span class="dcha">${hora(f.momento)}</span></li>`).join('')
-    : '<li class="vacio">Sin fichajes.</li>';
+const ICO = {
+  pausa: '<svg viewBox="0 0 24 24" fill="#fff"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="#1c2a44"><path d="M7 4l13 8-13 8z"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" fill="#d33a2c"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>'
+};
+function pintarFichaje() {
+  const c = calcular(), ult = HOY[HOY.length - 1];
+  const tarjeta = $('tarjetaFichaje');
+  tarjeta.classList.toggle('activa', c.estado === 'trabajando');
+  $('contador').textContent = duracion(c.trabajado);
+  $('puntoF').className = 'punto' + (c.estado === 'trabajando' ? '' : c.estado === 'pausa' ? ' ambar' : ' oculto');
+  const primera = HOY.find((f) => f.tipo === 'entrada');
+  $('estadoF').innerHTML = c.estado === 'trabajando' ? `<b class="verde">Trabajando</b> desde las ${fmtHora(primera ? primera.momento : ult.momento)}`
+    : c.estado === 'pausa' ? `<b class="ambar">En pausa</b> ${duracion(Date.now() - c.pausaDesde).replace(/^0h /, '')}`
+    : c.estado === 'terminada' ? `Jornada terminada a las ${fmtHora(ult.momento)}` : 'Sin fichar';
+  const enCurso = c.estado === 'trabajando' || c.estado === 'pausa';
+  $('bFichar').classList.toggle('oculto', enCurso);
+  $('bFichar').lastChild.textContent = c.estado === 'terminada' ? 'Volver a fichar' : 'Fichar';
+  $('botonesF').innerHTML = !enCurso ? '' :
+    (c.estado === 'trabajando' ? `<button class="bF" data-fichar="inicio_pausa" aria-label="Pausa">${ICO.pausa}</button>`
+                               : `<button class="bF blanco" data-fichar="fin_pausa" aria-label="Reanudar">${ICO.play}</button>`) +
+    `<button class="bF oscuro" data-fichar="salida" aria-label="Terminar jornada">${ICO.stop}</button>`;
+  // Línea del día desde la primera entrada (12 horas)
+  $('lineaDia').classList.toggle('oculto', !primera);
+  if (primera) {
+    const ini = new Date(primera.momento); ini.setMinutes(0, 0, 0);
+    const fin = ini.getTime() + 12 * 3600e3;
+    $('lineaRelleno').style.width = Math.min(100, (Date.now() - ini.getTime()) / (fin - ini.getTime()) * 100) + '%';
+    $('hIni').textContent = fmtHora(ini); $('hMed').textContent = fmtHora(new Date(ini.getTime() + 6 * 3600e3)); $('hFin').textContent = fmtHora(new Date(fin));
+  }
 }
+setInterval(() => { if (HOY.length) pintarFichaje(); }, 1000);
+
 async function cargarHoy() {
   const d = await rpc('consultar_estado', { p_token: TOKEN });
   if (!d.ok) throw new Error(d.error);
-  pintarHoy(d);
+  HOY = d.hoy || [];
+  pintarFichaje();
 }
 function ubicacion() {
   return new Promise((ok) => {
-    if (!navigator.geolocation) return ok({ error: 'este navegador no permite ubicación' });
+    if (!navigator.geolocation) return ok(null);
     navigator.geolocation.getCurrentPosition(
       (p) => ok({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy }),
-      (e) => ok({ error: e.code === 1 ? 'permiso de ubicación denegado' : e.code === 3 ? 'la ubicación tardó demasiado' : 'no se pudo obtener la ubicación' }),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+      () => ok(null), { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
 }
 async function fichar(tipo) {
-  const pin = $('pin').value.trim();
-  if (!/^\d{4,6}$/.test(pin)) { avisar('avisoFichar', 'Escribe tu PIN (4 a 6 cifras).', 'error'); $('pin').focus(); return; }
-  document.querySelectorAll('button[data-tipo]').forEach((b) => (b.disabled = true));
-  avisar('avisoFichar', 'Obteniendo ubicación…');
-  const u = await ubicacion(), ub = u.error ? null : u;
-  avisar('avisoFichar', 'Registrando…');
+  if (tipo === 'salida' && !confirm('¿Terminar tu jornada de hoy?')) return;
+  document.querySelectorAll('[data-fichar], #bFichar').forEach((b) => (b.disabled = true));
+  $('avisoF').textContent = 'Registrando…';
+  const ub = await ubicacion();
   try {
-    const r = await rpc('fichar', { p_token: TOKEN, p_pin: pin, p_tipo: tipo,
+    const r = await rpc('fichar_enlace', { p_token: TOKEN, p_tipo: tipo,
       p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null });
-    if (r.ok) {
-      $('pin').value = '';
-      avisar('avisoFichar', `${NOMBRES[tipo]} registrada a las ${hora(r.momento)}` + (ub ? ' con ubicación.' : ` (sin ubicación: ${u.error}).`), 'ok');
-      if (!SESION) entrarCon(pin).catch(() => {});      // aprovecha el PIN para abrir el resto de apartados
-      else cargarResumen().catch(() => {});
-    } else avisar('avisoFichar', r.error, 'error');
-  } catch (e) { avisar('avisoFichar', e.message + '. No se ha registrado: vuelve a intentarlo.', 'error'); }
-  cargarHoy().catch(() => {});
+    if (!r.ok) throw new Error(r.error);
+    $('avisoF').textContent = ub ? '' : 'Registrado sin ubicación: revisa el permiso de ubicación del navegador.';
+    toast({ entrada: 'Entrada', inicio_pausa: 'Pausa', fin_pausa: 'Vuelta de la pausa', salida: 'Salida' }[tipo] + ' registrada a las ' + fmtHora(r.momento));
+  } catch (e) { $('avisoF').textContent = e.message + '. No se ha registrado: vuelve a intentarlo.'; }
+  await cargarHoy().catch(() => {});
+  document.querySelectorAll('[data-fichar], #bFichar').forEach((b) => (b.disabled = false));
+  if (tipo === 'salida') cargarResumen().catch(() => {});
 }
-document.querySelectorAll('button[data-tipo]').forEach((b) => b.addEventListener('click', () => fichar(b.dataset.tipo)));
+$('bFichar').addEventListener('click', () => fichar('entrada'));
+$('botonesF').addEventListener('click', (ev) => { const b = ev.target.closest('[data-fichar]'); if (b) fichar(b.dataset.fichar); });
 
-// ---------- Pintar datos de la sesión ----------
+// ---------- Pintar datos ----------
+const fechaLarga = (ymd) => { const [a, m, d] = ymd.split('-'); return `${Number(d)} de ${MESES[Number(m) - 1]}`; };
+const diaSemana = (ymd) => new Date(ymd + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' });
+const hm = (h) => `${Math.floor(h)} h ${dos(Math.round((h % 1) * 60))} min`;
+const hoyYmd = () => new Date().toLocaleDateString('sv-SE', zona);
+function lunesDe(ymd) { const d = new Date(ymd + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 6) % 7); return d.toISOString().slice(0, 10); }
+
 function pintarTodo() {
   const d = DATOS; if (!d) return;
-  // Jornadas
-  $('listaJornadas').innerHTML = d.jornadas.length ? d.jornadas.map((j) => `<li><span>${esc(diaSemana(j.dia))}
-      <span class="sub">${esc(j.entrada)} – ${esc(j.salida || '…')}${j.pausa ? ' · pausa ' + hhmm(j.pausa) : ''}</span></span>
-      <span class="dcha">${j.abierta ? '<span class="chip rojo">Sin cerrar</span>' : hhmm(j.horas)}</span></li>`).join('')
-    : '<li class="vacio">Todavía no hay jornadas.</li>';
-  // Vacaciones
   const v = d.vacaciones;
-  $('vacAnio').textContent = v.anio;
-  $('vacDisp').textContent = v.disponibles; $('vacUsad').textContent = v.usados; $('vacPend').textContent = v.pendientes;
-  $('vacNota').textContent = `Te corresponden ${v.dias} días ${v.tipo} al año según tu contrato.`;
-  if (!$('ausTipo').options.length) $('ausTipo').innerHTML = Object.entries(d.tiposAusencia).map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join('');
-  const chip = { pendiente: 'ambar', aprobada: 'verde', rechazada: 'rojo', anulada: '' };
-  $('listaAus').innerHTML = d.ausencias.length ? d.ausencias.map((a) => `<li><span>${esc(a.tipoTexto)}
-      <span class="sub">${fechaCorta(a.desde)}${a.hasta !== a.desde ? ' – ' + fechaCorta(a.hasta) : ''} · ${a.dias} días</span>
-      ${a.respuesta ? `<span class="sub">Respuesta: ${esc(a.respuesta)}</span>` : ''}</span>
-      <span class="dcha"><span class="chip ${chip[a.estado]}">${a.estado}</span>
-      ${a.estado === 'pendiente' ? `<br><button class="mini sec" data-anular="${a.id}" style="margin-top:6px">Anular</button>` : ''}</span></li>`).join('')
-    : '<li class="vacio">No has solicitado ninguna.</li>';
-  // Documentos
-  const fila = (x) => `<li><span>${esc(x.titulo)}<span class="sub">${x.visto_en ? 'Subido el ' + new Date(x.subido_en).toLocaleDateString('es-ES', zona) : '<b style="color:var(--salida)">Nuevo</b>'}</span></span>
-      <span class="dcha" id="doc-${x.id}"><button class="mini sec" data-doc="${x.id}">Abrir</button></span></li>`;
+  // Portada: ausencias
+  $('resumenVac').innerHTML = `<b>${v.disponibles} días de vacaciones disponibles</b><span>${v.usados} disfrutados · ${v.pendientes} pendientes de aprobar · ${v.dias} al año</span>`;
+  const futuras = d.ausencias.filter((a) => a.hasta >= hoyYmd() && (a.estado === 'aprobada' || a.estado === 'pendiente')).sort((a, b) => a.desde.localeCompare(b.desde));
+  $('proximas').innerHTML = futuras.length ? futuras.slice(0, 3).map((a) => `<div class="itemAus" style="margin-bottom:10px">
+      <div class="icoCaja"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></div>
+      <div><b>${esc(a.tipoTexto)} · ${a.horas ? String(a.horas).replace('.', ',') + ' h' + (a.hora_desde ? ' (' + a.hora_desde + '–' + a.hora_hasta + ')' : '') : a.dias + ' días'}</b><span>${fechaLarga(a.desde)}${a.hasta !== a.desde ? ' – ' + fechaLarga(a.hasta) : ''} · ${a.estado === 'pendiente' ? 'pendiente de aprobar' : 'aprobada'}</span></div></div>`).join('')
+    : `<div class="itemAus"><div class="icoCaja"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M9.5 13.5l5 5M14.5 13.5l-5 5"/></svg></div>
+      <div><b>No hay ausencias registradas</b><span>Consulta el estado de tus solicitudes y las próximas fechas.</span></div></div>`;
+  // Portada: última nómina
   const nominas = d.documentos.filter((x) => x.tipo === 'nomina');
   const otros = d.documentos.filter((x) => x.tipo !== 'nomina');
-  $('listaNominas').innerHTML = nominas.length ? nominas.map(fila).join('') : '<li class="vacio">Todavía no tienes nóminas subidas.</li>';
+  $('ultimaNomina').innerHTML = nominas.length
+    ? `<button class="tarjNom" data-ir="nominas"><span class="icoCirc"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h5"/></svg></span>
+       <div><b>${esc(nominas[0].titulo)}</b><span>${nominas[0].visto_en ? 'Ya la has abierto' : 'Nueva: toca para verla'}</span></div></button>`
+    : `<div class="tarjNom"><span class="icoCirc"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/></svg></span><div><b>Aún no tienes ninguna nómina subida</b></div></div>`;
+  const nuevasN = nominas.filter((x) => !x.visto_en).length, nuevosD = otros.filter((x) => !x.visto_en).length;
+  $('gNom').textContent = nuevasN; $('gNom').classList.toggle('oculto', !nuevasN);
+  $('gDoc').textContent = nuevosD; $('gDoc').classList.toggle('oculto', !nuevosD);
+
+  // Perfil
+  const partes = d.nombre.split(' ');
+  $('avatar').textContent = ((partes[0] || '')[0] + (partes[1] || '')[0]).toUpperCase();
+  $('pNombre').textContent = d.nombre;
+  $('pPuesto').textContent = (d.puesto || 'Sin puesto asignado').toUpperCase();
+  $('pEmail').textContent = d.email;
+  $('pTelefono').classList.toggle('vacio', !d.telefono);
+  $('pTelefono').querySelector('span').textContent = d.telefono || 'Toca para añadir tu número de teléfono';
+
+  // Control horario
+  const lunes = lunesDe(hoyYmd());
+  const semana = d.jornadas.filter((j) => j.dia >= lunes).reduce((t, j) => t + j.horas, 0);
+  $('hSemana').textContent = hm(semana); $('hContrato').textContent = d.horasContrato ? d.horasContrato + ' h' : '–';
+  $('listaJornadas').innerHTML = d.jornadas.length ? d.jornadas.map((j) => `<li><span><span style="text-transform:capitalize">${esc(diaSemana(j.dia))}</span>
+      <span class="sub">${esc(j.entrada)} – ${esc(j.salida || '…')}${j.pausa ? ' · pausa ' + hm(j.pausa) : ''}</span></span>
+      <span class="dcha">${j.abierta ? (j.dia === hoyYmd() ? '<span class="chip ambar">En curso</span>' : '<span class="chip rojo">Sin cerrar</span>') : hm(j.horas)}</span></li>`).join('')
+    : '<li class="vacio">Todavía no hay jornadas.</li>';
+
+  // Ausencias
+  $('vacTit').textContent = 'Vacaciones ' + v.anio;
+  $('vacTotal').textContent = 'Total ' + v.dias + ' días ' + v.tipo;
+  $('vacGrande').textContent = v.disponibles + ' días disponibles';
+  const tot = Math.max(1, v.dias);
+  $('barraVac').innerHTML = `<i style="width:${Math.max(0, v.disponibles) / tot * 100}%;background:#4f7be3"></i><i style="width:${v.pendientes / tot * 100}%;background:var(--ambar)"></i>`;
+  $('lDisp').textContent = v.disponibles + ' disponibles'; $('lPend').textContent = v.pendientes + ' pendientes'; $('lUsad').textContent = v.usados + ' usados';
+  if (!$('ausTipo').options.length) { $('ausTipo').innerHTML = d.tiposAusencia.map((t) => `<option value="${t.clave}">${esc(t.nombre)}</option>`).join(''); ajustarHoras(); }
+  const chip = { pendiente: 'ambar', aprobada: 'verde', rechazada: 'rojo', anulada: '' };
+  $('listaAus').innerHTML = d.ausencias.length ? d.ausencias.map((a) => `<li><span><b style="font-weight:600">${esc(a.tipoTexto)}</b>
+      <span class="sub">${fechaLarga(a.desde)}${a.hasta !== a.desde ? ' – ' + fechaLarga(a.hasta) : ''} · ${a.horas ? String(a.horas).replace('.', ',') + ' h' + (a.hora_desde ? ' (' + a.hora_desde + '–' + a.hora_hasta + ')' : '') : a.dias + ' días'}</span>
+      ${a.respuesta ? `<span class="sub">Respuesta: ${esc(a.respuesta)}</span>` : ''}</span>
+      <span class="dcha"><span class="chip ${chip[a.estado]}">${a.estado}</span>
+      ${a.estado === 'pendiente' ? `<br><button class="bChico" data-anular="${a.id}" style="margin-top:6px">Anular</button>` : ''}</span></li>`).join('')
+    : '<li class="vacio">No has solicitado ninguna.</li>';
+  pintarCalendario();
+
+  // Nóminas y documentos
+  const fila = (x) => `<li><span>${esc(x.titulo)}<span class="sub">${x.visto_en ? 'Subido el ' + new Date(x.subido_en).toLocaleDateString('es-ES', zona) : '<b style="color:var(--rojo)">Nuevo</b>'}</span></span>
+      <span class="dcha" id="doc-${x.id}"><button class="bChico" data-doc="${x.id}">Abrir</button></span></li>`;
+  $('listaNominas').innerHTML = nominas.length ? nominas.map(fila).join('') : '<li class="vacio">Aún no tienes ninguna nómina subida.</li>';
   $('listaDocs').innerHTML = otros.length ? otros.map(fila).join('') : '<li class="vacio">Todavía no tienes documentos.</li>';
-  $('puntoNom').classList.toggle('oculto', !nominas.some((x) => !x.visto_en));
-  $('puntoDoc').classList.toggle('oculto', !otros.some((x) => !x.visto_en));
-  $('perfil').innerHTML = `<li><span>Nombre</span><span class="dcha">${esc(d.nombre)}</span></li>
-    <li><span>Puesto</span><span class="dcha">${esc(d.puesto || '—')}</span></li>
-    <li class="vacio">Si algún dato no es correcto, díselo al club.</li>`;
+  // Turnos planificados
+  const tur = d.turnos || [];
+  $('cajaTurnos').classList.toggle('oculto', !tur.length);
+  $('listaTurnosMZ').innerHTML = tur.map((t) => `<li><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${esc(t.color)};margin-right:6px"></span><b style="font-weight:600">${esc(t.nombre)}</b>
+      <span class="sub">${fechaLarga(t.fecha)}${t.nota ? ' · ' + esc(t.nota) : ''}</span></span><span class="dcha">${t.inicio ? esc(t.inicio + '–' + t.fin) : esc(t.horas + ' h')}</span></li>`).join('');
+  // Importe líquido junto a cada nómina (si el club lo ha registrado)
+  (d.nominas || []).forEach((n) => { if (!n.documento_id) return; const c = $('doc-' + n.documento_id);
+    if (c) c.insertAdjacentHTML('afterbegin', `<span style="font-size:14px;margin-right:8px">${Number(n.liquido).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span>`); });
   // Gastos
-  $('listaGastos').innerHTML = d.facturas.length ? d.facturas.map((f) => `<li><span>${esc(f.nota || 'Ticket')}</span><span class="dcha">${esc(f.fecha)}</span></li>`).join('')
+  $('listaGastos').innerHTML = d.facturas.length ? d.facturas.map((f) => `<li><span>${esc(f.categoria || f.nota || 'Ticket')}${f.fmp ? ' <span class="chip ambar">Federación</span>' : ''}
+      <span class="sub">${esc(f.nota || '')}</span></span><span class="dcha">${f.importe != null ? f.importe.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }) + '<br>' : ''}<span class="sub">${esc(f.fecha.slice(0, 10))}</span></span></li>`).join('')
     : '<li class="vacio">Todavía no has enviado ninguno.</li>';
 }
 
-// ---------- Ausencias ----------
+// ---------- Calendario de ausencias ----------
+function pintarCalendario() {
+  if (!MES) { const h = hoyYmd(); MES = { a: Number(h.slice(0, 4)), m: Number(h.slice(5, 7)) - 1 }; }
+  $('calMes').textContent = MESES[MES.m][0].toUpperCase() + MESES[MES.m].slice(1) + ' ' + MES.a;
+  const primero = new Date(Date.UTC(MES.a, MES.m, 1));
+  const inicio = new Date(primero); inicio.setUTCDate(1 - (primero.getUTCDay() + 6) % 7);
+  const aus = (DATOS ? DATOS.ausencias : []).filter((a) => a.estado === 'aprobada' || a.estado === 'pendiente');
+  const hoy = hoyYmd();
+  let html = ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d) => `<div class="ds">${d}</div>`).join('');
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(inicio); d.setUTCDate(inicio.getUTCDate() + i);
+    if (i === 35 && d.getUTCMonth() !== MES.m) break;
+    const ymd = d.toISOString().slice(0, 10);
+    const a = aus.find((x) => ymd >= x.desde && ymd <= x.hasta);
+    const cls = ['d', d.getUTCMonth() !== MES.m ? 'fuera' : '', d.getUTCDay() % 6 === 0 ? 'finde' : '', ymd === hoy ? 'hoy' : '',
+                 a ? (a.estado === 'aprobada' ? 'aprob' : 'pend') : ''].join(' ');
+    html += `<div class="${cls}" title="${a ? esc(a.tipoTexto) : ''}">${d.getUTCDate()}</div>`;
+  }
+  $('rejCal').innerHTML = html;
+}
+$('calAnt').addEventListener('click', () => { MES.m--; if (MES.m < 0) { MES.m = 11; MES.a--; } pintarCalendario(); });
+$('calSig').addEventListener('click', () => { MES.m++; if (MES.m > 11) { MES.m = 0; MES.a++; } pintarCalendario(); });
+
+// ---------- Solicitar y anular ausencias ----------
+function abrirSolicitud() { $('msgAus').textContent = ''; $('modal').classList.remove('oculto'); }
+$('btnCerrar').addEventListener('click', () => $('modal').classList.add('oculto'));
+$('modal').addEventListener('click', (e) => { if (e.target.id === 'modal') $('modal').classList.add('oculto'); });
+function ajustarHoras() {
+  const t = (DATOS && DATOS.tiposAusencia || []).find((x) => x.clave === $('ausTipo').value) || {};
+  $('lPorHoras').classList.toggle('oculto', !t.por_horas);
+  if (!t.por_horas) $('ausPorHoras').checked = false;
+  const h = $('ausPorHoras').checked;
+  $('cajaHasta').classList.toggle('oculto', h); $('cajaHoras').classList.toggle('oculto', !h);
+  $('lDesde').textContent = h ? 'Día' : 'Desde';
+}
+$('ausTipo').addEventListener('change', ajustarHoras);
+$('ausPorHoras').addEventListener('change', ajustarHoras);
+$('ausDesde').addEventListener('change', () => { if (!$('ausHasta').value || $('ausHasta').value < $('ausDesde').value) $('ausHasta').value = $('ausDesde').value; });
 $('btnAusencia').addEventListener('click', async () => {
-  const desde = $('ausDesde').value, hasta = $('ausHasta').value || desde;
-  if (!desde) return avisar('avisoAus', 'Elige las fechas.', 'error');
-  $('btnAusencia').disabled = true; avisar('avisoAus', 'Enviando…');
+  const desde = $('ausDesde').value, hasta = $('ausHasta').value || desde, msg = $('msgAus');
+  if (!desde) { msg.textContent = 'Elige las fechas.'; msg.className = 'msg error'; return; }
+  $('btnAusencia').disabled = true; msg.textContent = 'Enviando…'; msg.className = 'msg';
   try {
-    DATOS = await api('solicitarAusencia', { tipo: $('ausTipo').value, desde, hasta, comentario: $('ausComentario').value });
-    pintarTodo(); $('ausComentario').value = ''; $('ausDesde').value = ''; $('ausHasta').value = '';
-    avisar('avisoAus', 'Solicitud enviada. Te avisaremos por correo cuando se apruebe.', 'ok');
-  } catch (e) { avisar('avisoAus', e.message, 'error'); }
+    DATOS = await api('solicitarAusencia', { tipo: $('ausTipo').value, desde, hasta, comentario: $('ausComentario').value,
+      porHoras: $('ausPorHoras').checked, horaDesde: $('ausHoraDesde').value, horaHasta: $('ausHoraHasta').value });
+    pintarTodo(); $('modal').classList.add('oculto');
+    $('ausDesde').value = ''; $('ausHasta').value = ''; $('ausComentario').value = '';
+    toast('Solicitud enviada. Te avisaremos por correo cuando se apruebe.');
+  } catch (e) { msg.textContent = e.message; msg.className = 'msg error'; }
   finally { $('btnAusencia').disabled = false; }
 });
-$('ausDesde').addEventListener('change', () => { if (!$('ausHasta').value || $('ausHasta').value < $('ausDesde').value) $('ausHasta').value = $('ausDesde').value; });
 $('listaAus').addEventListener('click', async (ev) => {
-  const b = ev.target.closest('button[data-anular]'); if (!b) return;
+  const b = ev.target.closest('[data-anular]'); if (!b) return;
   if (!confirm('¿Anular esta solicitud?')) return;
   b.disabled = true;
-  try { DATOS = await api('anularAusencia', { id: b.dataset.anular }); pintarTodo(); } catch (e) { alert(e.message); b.disabled = false; }
+  try { DATOS = await api('anularAusencia', { id: b.dataset.anular }); pintarTodo(); } catch (e) { toast(e.message); b.disabled = false; }
 });
 
-// ---------- Abrir documentos (dos toques: preparar y abrir, para que el móvil no lo bloquee) ----------
+// ---------- Teléfono ----------
+$('pTelefono').addEventListener('click', async () => {
+  const t = prompt('Tu número de teléfono', DATOS && DATOS.telefono || '');
+  if (t === null) return;
+  try { DATOS = await api('actualizarPerfil', { telefono: t }); pintarTodo(); toast('Teléfono guardado'); } catch (e) { toast(e.message); }
+});
+
+// ---------- Abrir nóminas y documentos ----------
 document.addEventListener('click', async (ev) => {
   const b = ev.target.closest('button[data-doc]'); if (!b) return;
   b.disabled = true; b.textContent = 'Preparando…';
@@ -371,8 +621,8 @@ document.addEventListener('click', async (ev) => {
     const r = await api('descargar', { id: b.dataset.doc });
     const bytes = Uint8Array.from(atob(r.datos), (c) => c.charCodeAt(0));
     const url = URL.createObjectURL(new Blob([bytes], { type: r.mime }));
-    $('doc-' + b.dataset.doc).innerHTML = `<a class="boton" href="${url}" target="_blank" download="${esc(r.nombre)}">Ver</a>`;
-  } catch (e) { alert(e.message); b.disabled = false; b.textContent = 'Abrir'; }
+    $('doc-' + b.dataset.doc).innerHTML = `<a class="bChico" href="${url}" target="_blank" download="${esc(r.nombre)}">Ver</a>`;
+  } catch (e) { toast(e.message); b.disabled = false; b.textContent = 'Abrir'; }
 });
 
 // ---------- Gastos ----------
@@ -381,10 +631,9 @@ function comprimir(archivo) {
   return new Promise((ok, ko) => {
     const img = new Image();
     img.onload = () => {
-      const max = 1800, k = Math.min(1, max / Math.max(img.width, img.height));
+      const k = Math.min(1, 1800 / Math.max(img.width, img.height));
       const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(img.src);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src);
       ok(c.toDataURL('image/jpeg', 0.82));
     };
     img.onerror = () => ko(new Error('No se puede leer la foto. Prueba a hacerla de nuevo.'));
@@ -392,44 +641,67 @@ function comprimir(archivo) {
   });
 }
 $('gArchivo').addEventListener('change', async () => {
-  const a = $('gArchivo').files[0]; GASTO = null; $('gVista').classList.add('oculto'); avisar('avisoGasto', '');
+  const a = $('gArchivo').files[0]; GASTO = null; $('gVista').classList.add('oculto'); $('msgGasto').textContent = '';
   if (!a) return;
   try {
     if (a.type === 'application/pdf') {
       if (a.size > 8 * 1024 * 1024) throw new Error('El PDF pesa más de 8 MB');
       const datos = await new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = ko; r.readAsDataURL(a); });
-      GASTO = { mime: 'application/pdf', datos }; avisar('avisoGasto', 'PDF listo para enviar.');
+      GASTO = { mime: 'application/pdf', datos }; $('msgGasto').textContent = 'PDF listo para enviar.';
     } else {
       const url = await comprimir(a);
       GASTO = { mime: 'image/jpeg', datos: url.split(',')[1] };
       $('gVista').src = url; $('gVista').classList.remove('oculto');
     }
-  } catch (e) { avisar('avisoGasto', e.message, 'error'); }
+  } catch (e) { $('msgGasto').textContent = e.message; $('msgGasto').className = 'msg error'; }
 });
-$('btnGasto').addEventListener('click', async () => {
-  if (!GASTO) return avisar('avisoGasto', 'Primero haz la foto o elige el archivo.', 'error');
-  $('btnGasto').disabled = true; avisar('avisoGasto', 'Enviando…');
+// Categorías y competiciones abiertas (se cargan al abrir Gastos)
+let DATOS_GASTOS = null;
+async function prepararGastos() {
+  if (!$('gFecha').value) $('gFecha').value = hoyYmd();
+  if (DATOS_GASTOS) return;
   try {
-    DATOS = await api('enviarFactura', Object.assign({ nota: $('gNota').value }, GASTO));
-    pintarTodo(); GASTO = null; $('gArchivo').value = ''; $('gNota').value = ''; $('gVista').classList.add('oculto');
-    avisar('avisoGasto', 'Enviado. ¡Gracias!', 'ok');
-  } catch (e) { avisar('avisoGasto', e.message, 'error'); }
+    DATOS_GASTOS = await api('datosGastos');
+    $('gCategoria').innerHTML = '<option value="">Elige…</option>' + DATOS_GASTOS.categorias.map((c) => `<option value="${c.clave}">${esc(c.nombre)}</option>`).join('');
+    $('gComp').innerHTML = DATOS_GASTOS.competiciones.length ? DATOS_GASTOS.competiciones.map((c) => `<option value="${c.id}">${esc(c.nombre)}${c.lugar ? ' (' + esc(c.lugar) + ')' : ''}</option>`).join('')
+      : '<option value="">No hay ninguna abierta: pide al club que la cree</option>';
+  } catch (e) { $('msgGasto').textContent = e.message; $('msgGasto').className = 'msg error'; }
+}
+$('gFmp').addEventListener('change', () => $('gCajaFmp').classList.toggle('oculto', !$('gFmp').checked));
+window.addEventListener('hashchange', () => { if (location.hash === '#gastos') prepararGastos(); });
+if (location.hash === '#gastos') setTimeout(prepararGastos, 0);
+document.addEventListener('click', (ev) => { if (ev.target.closest('[data-ir="gastos"]')) prepararGastos(); });
+
+$('btnGasto').addEventListener('click', async () => {
+  const msg = $('msgGasto');
+  if (!GASTO) { msg.textContent = 'Primero haz la foto o elige el archivo.'; msg.className = 'msg error'; return; }
+  if (!$('gImporte').value.trim()) { msg.textContent = 'Indica el importe total del ticket.'; msg.className = 'msg error'; return; }
+  if (!$('gCategoria').value) { msg.textContent = 'Elige para qué es el gasto.'; msg.className = 'msg error'; return; }
+  if ($('gFmp').checked && (!$('gComp').value || !$('gProveedor').value.trim())) { msg.textContent = 'Para la Federación: elige la competición y escribe la empresa del ticket.'; msg.className = 'msg error'; return; }
+  $('btnGasto').disabled = true; msg.textContent = 'Enviando…'; msg.className = 'msg';
+  try {
+    DATOS = await api('enviarFactura', Object.assign({ nota: $('gNota').value, fecha: $('gFecha').value, importe: $('gImporte').value,
+      categoria: $('gCategoria').value, fmp: $('gFmp').checked, competicion_id: $('gComp').value, proveedor: $('gProveedor').value,
+      cif: $('gCif').value, num_factura: $('gNumFactura').value, concepto: $('gConcepto').value, forma_pago: $('gFormaPago').value }, GASTO));
+    pintarTodo(); GASTO = null; $('gArchivo').value = ''; $('gVista').classList.add('oculto');
+    ['gNota', 'gImporte', 'gProveedor', 'gCif', 'gNumFactura', 'gConcepto'].forEach((x) => ($(x).value = ''));
+    msg.textContent = 'Enviado. ¡Gracias!'; msg.className = 'msg ok';
+  } catch (e) { msg.textContent = e.message; msg.className = 'msg error'; }
   finally { $('btnGasto').disabled = false; }
 });
 
 // ---------- Arranque ----------
 (async function () {
-  if (!TOKEN) {
-    $('saludo').textContent = 'Falta tu enlace';
-    $('fatal').innerHTML = 'Abre CEPA desde el enlace personal que te ha enviado el club.';
-    document.querySelector('nav').classList.add('oculto');
-    return;
-  }
-  const inicial = new URLSearchParams(location.search).get('v');
-  mostrar(['fichar', 'ausencias', 'nominas', 'documentos', 'gastos'].includes(inicial) ? inicial : 'fichar');
-  try { await cargarHoy(); } catch (e) { $('saludo').textContent = 'No se ha podido cargar'; $('fatal').textContent = e.message; }
-  cargarResumen().catch(() => {});
+  if (location.hash.match(/t=/)) history.replaceState(null, '', location.pathname);
+  mostrar();
+  if (!TOKEN) { $('estadoF').textContent = 'Abre CEPA desde el enlace personal que te ha enviado el club.'; return; }
+  cargarHoy().catch((e) => { $('estadoF').textContent = e.message; });
+  try {
+    if (!SESION) await entrar();
+    await cargarResumen();
+  } catch (e) { toast(e.message); }
 })();
+window.addEventListener('pageshow', (e) => { if (e.persisted) { cargarHoy().catch(() => {}); cargarResumen().catch(() => {}); } });
 </script>
 </body>
 </html>
