@@ -228,6 +228,7 @@
       <div><b id="hSemana">–</b><span>esta semana</span></div>
       <div><b id="hContrato">–</b><span>de contrato a la semana</span></div>
     </div>
+    <div id="cajaJornada" class="oculto"></div>
     <div id="cajaTurnos" class="oculto"><div class="etq">Mis próximos turnos</div><ul class="lista" id="listaTurnosMZ"></ul></div>
     <div class="etq">Últimas jornadas</div>
     <ul class="lista" id="listaJornadas"></ul>
@@ -507,6 +508,7 @@ function pintarTodo() {
   const lunes = lunesDe(hoyYmd());
   const semana = d.jornadas.filter((j) => j.dia >= lunes).reduce((t, j) => t + j.horas, 0);
   $('hSemana').textContent = hm(semana); $('hContrato').textContent = d.horasContrato ? d.horasContrato + ' h' : '–';
+  pintarJornada(d, semana);
   $('listaJornadas').innerHTML = d.jornadas.length ? d.jornadas.map((j) => `<li><span><span style="text-transform:capitalize">${esc(diaSemana(j.dia))}</span>
       <span class="sub">${esc(j.entrada)} – ${esc(j.salida || '…')}${j.pausa ? ' · pausa ' + hm(j.pausa) : ''}</span></span>
       <span class="dcha">${j.abierta ? (j.dia === hoyYmd() ? '<span class="chip ambar">En curso</span>' : '<span class="chip rojo">Sin cerrar</span>') : hm(j.horas)}</span></li>`).join('')
@@ -702,6 +704,21 @@ $('btnGasto').addEventListener('click', async () => {
   } catch (e) { toast(e.message); }
 })();
 window.addEventListener('pageshow', (e) => { if (e.persisted) { cargarHoy().catch(() => {}); cargarResumen().catch(() => {}); } });
+
+// Jornada mixta o flexible: horas fijas y bolsa semanal
+function pintarJornada(d, semana) {
+  const j = d.jornada || { tipo: 'fija', tramos: [] }, caja = $('cajaJornada');
+  if (j.tipo === 'fija' || !d.horasContrato) { caja.classList.add('oculto'); return; }
+  const DIAS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+  const min = (h) => Number(h.slice(0, 2)) * 60 + Number(h.slice(3, 5));
+  const fijas = j.tramos.reduce((t, x) => t + Math.max(0, min(x.fin) - min(x.inicio)) / 60, 0);
+  const faltan = Math.max(0, d.horasContrato - semana);
+  caja.innerHTML = `<div class="etq">Tu jornada</div><ul class="lista">` +
+    (j.tramos.length ? `<li><span>Horas fijas<span class="sub">${j.tramos.map((x) => DIAS[x.dia - 1] + ' ' + x.inicio + '–' + x.fin).join(' · ')}</span></span><span class="dcha">${hm(fijas)}</span></li>` : '') +
+    `<li><span>Bolsa semanal<span class="sub">${j.tipo === 'mixta' ? 'El resto de horas, cuando mejor te venga dentro de la semana' : 'Repartes tus horas como quieras dentro de la semana'}</span></span><span class="dcha">${hm(Math.max(0, d.horasContrato - fijas))}</span></li>` +
+    `<li><span>Te quedan esta semana</span><span class="dcha">${faltan > 0 ? hm(faltan) : '<span class="chip verde">Cumplidas</span>'}</span></li></ul>`;
+  caja.classList.remove('oculto');
+}
 </script>
 </body>
 </html>
