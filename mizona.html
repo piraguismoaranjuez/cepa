@@ -149,6 +149,7 @@
   .msg { font-size: 15px; margin-top: 10px; min-height: 20px; }
   .msg.error { color: var(--rojo); } .msg.ok { color: #1c7a4c; }
   .foto { width: 100%; border-radius: 12px; margin-top: 10px; }
+  .auto { background: #fff7d6 !important; border-color: #e3c45a !important; }
   .toast { position: fixed; left: 16px; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom)); background: #1b2330; color: #fff; padding: 13px 16px; border-radius: 14px; z-index: 30; max-width: 528px; margin: 0 auto; font-size: 15px; }
 </style>
 </head>
@@ -277,7 +278,7 @@
 <section class="vista oculto" id="v-gastos">
   <div class="cabBlanca"><button class="volver" data-ir="inicio" aria-label="Volver"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button><h1>Gastos</h1></div>
   <div class="pag">
-    <div class="gris"><span>Haz una foto del ticket entero, bien iluminado y sin sombras, o elige un PDF. Le llega al club directamente.</span></div>
+    <div class="gris"><span>Haz una foto del ticket entero, bien iluminado y sin sombras, o elige un PDF. Los datos se leen solos: solo tienes que revisarlos.</span></div>
     <div class="sheet" style="padding:0;border-radius:0;max-height:none">
       <label>Foto o PDF</label><input type="file" id="gArchivo" accept="image/*,application/pdf">
       <img id="gVista" class="foto oculto" alt="Vista previa">
@@ -655,8 +656,33 @@ $('gArchivo').addEventListener('change', async () => {
       GASTO = { mime: 'image/jpeg', datos: url.split(',')[1] };
       $('gVista').src = url; $('gVista').classList.remove('oculto');
     }
+    leerTicketAuto();
   } catch (e) { $('msgGasto').textContent = e.message; $('msgGasto').className = 'msg error'; }
 });
+// Lee el ticket (Claude o, si falla, Google) y rellena lo que esté vacío; el trabajador solo revisa
+const CAMPOS_AUTO = { fecha: 'gFecha', importe: 'gImporte', categoria: 'gCategoria', proveedor: 'gProveedor', cif: 'gCif', num_factura: 'gNumFactura', concepto: 'gConcepto' };
+async function leerTicketAuto() {
+  const yo = GASTO, msg = $('msgGasto');
+  Object.values(CAMPOS_AUTO).forEach((id) => $(id).classList.remove('auto'));
+  $('btnGasto').disabled = true; msg.textContent = 'Leyendo el ticket…'; msg.className = 'msg';
+  try {
+    await prepararGastos();
+    const r = await api('leerTicket', { mime: yo.mime, datos: yo.datos });
+    if (GASTO !== yo) return;   // ha cambiado de foto mientras leía
+    let n = 0;
+    Object.entries(CAMPOS_AUTO).forEach(([k, id]) => {
+      if (r[k] == null || r[k] === '') return;
+      const el = $(id), vacio = !el.value || (k === 'fecha' && el.value === hoyYmd());
+      if (!vacio) return;
+      el.value = k === 'importe' ? Number(r[k]).toFixed(2).replace('.', ',') : r[k];
+      if (el.value) { el.classList.add('auto'); n++; }
+    });
+    msg.textContent = n ? 'Datos leídos del ticket: revísalos (en amarillo) y envía.' : 'No se ha podido leer el ticket: rellena los datos a mano.';
+    msg.className = 'msg ' + (n ? 'ok' : '');
+  } catch (e) { if (GASTO === yo) { msg.textContent = 'No se ha podido leer el ticket: rellena los datos a mano.'; msg.className = 'msg'; } }
+  finally { if (GASTO === yo) $('btnGasto').disabled = false; }
+}
+['gFecha', 'gImporte', 'gCategoria', 'gProveedor', 'gCif', 'gNumFactura', 'gConcepto'].forEach((id) => $(id).addEventListener('input', () => $(id).classList.remove('auto')));
 // Categorías y competiciones abiertas (se cargan al abrir Gastos)
 let DATOS_GASTOS = null;
 async function prepararGastos() {
@@ -687,6 +713,7 @@ $('btnGasto').addEventListener('click', async () => {
       cif: $('gCif').value, num_factura: $('gNumFactura').value, concepto: $('gConcepto').value, forma_pago: $('gFormaPago').value }, GASTO));
     pintarTodo(); GASTO = null; $('gArchivo').value = ''; $('gVista').classList.add('oculto');
     ['gNota', 'gImporte', 'gProveedor', 'gCif', 'gNumFactura', 'gConcepto'].forEach((x) => ($(x).value = ''));
+    Object.values(CAMPOS_AUTO).forEach((id) => $(id).classList.remove('auto')); $('gFecha').value = hoyYmd(); $('gCategoria').value = '';
     msg.textContent = 'Enviado. ¡Gracias!'; msg.className = 'msg ok';
   } catch (e) { msg.textContent = e.message; msg.className = 'msg error'; }
   finally { $('btnGasto').disabled = false; }
