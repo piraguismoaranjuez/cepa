@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CEPA">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<title>Fisioterapia · CEPA</title>
+<style>
+  :root { --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #ddd6c8; --azul: #2e5797; --rojo: #a33b2b; --verde: #1f7a5a; --ambar: #b7791f; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #fff; border-bottom: 1px solid var(--linea); padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 5; }
+  header a { color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  header b { flex: 1; text-align: center; font-size: 17px; margin-right: 52px; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 60px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: #e7e1d5; border-radius: 12px; padding: 3px; margin-bottom: 14px; }
+  .seg button { border: 0; background: none; font: inherit; font-weight: 600; padding: 9px; border-radius: 10px; color: var(--suave); }
+  .seg button.on { background: #fff; color: var(--tinta); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .cifras div { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 10px 8px; text-align: center; }
+  .cifras b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .cifras span { font-size: 12.5px; color: var(--suave); }
+  .cifras .mal b { color: var(--rojo); } .cifras .bien b { color: var(--verde); }
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); margin: 20px 2px 8px; display: flex; justify-content: space-between; }
+  h2.rojo { color: var(--rojo); }
+  .aviso { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .aviso.fuera { border-left: 4px solid var(--rojo); }
+  .aviso .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .aviso .cab b { font-size: 16.5px; }
+  .aviso .num { color: var(--suave); font-size: 13px; white-space: nowrap; }
+  .aviso .obs { margin: 4px 0 6px; }
+  .dato { font-size: 14px; color: var(--suave); display: flex; gap: 6px; margin-top: 2px; }
+  .dato b { color: var(--tinta); font-weight: 600; }
+  .chip { display: inline-block; font-size: 12.5px; border-radius: 99px; padding: 1px 9px; background: #eee9df; margin: 6px 4px 0 0; }
+  .chip.urgente, .chip.rojo { background: #f8e6e2; color: var(--rojo); } .chip.alta { background: #f6e8cf; color: #8a5a12; }
+  .chip.verde { background: #dcefe6; color: var(--verde); } .chip.azul { background: #e3ecfa; color: var(--azul); } .chip.gris { background: #eee; color: #777; }
+  .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .acciones button { border: 1px solid var(--linea); background: #fff; color: var(--azul); font: inherit; font-size: 14px; font-weight: 600; border-radius: 10px; padding: 7px 11px; }
+  .acciones button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .acciones button.peligro { color: var(--rojo); }
+  .vacio { text-align: center; color: var(--suave); padding: 24px 10px; }
+  .oculto { display: none !important; }
+  .msg { min-height: 20px; margin: 8px 0; font-size: 15px; } .msg.error { color: var(--rojo); } .msg.ok { color: var(--verde); }
+  .buscar { display: flex; gap: 6px; margin-bottom: 12px; }
+  input, textarea, select { width: 100%; font: inherit; padding: 11px 12px; border: 1px solid var(--linea); border-radius: 12px; background: #fff; color: var(--tinta); }
+  textarea { min-height: 80px; resize: vertical; }
+  .buscar button, button.grande { border: 0; background: var(--azul); color: #fff; font: inherit; font-weight: 650; border-radius: 12px; padding: 0 16px; }
+  button.grande { width: 100%; padding: 14px; margin-top: 14px; }
+  button[disabled] { opacity: .5; }
+  .enlaces { display: flex; flex-direction: column; gap: 8px; margin-top: 26px; }
+  .enlaces a { display: block; background: #fff; border: 1px solid var(--linea); border-radius: 12px; padding: 12px 14px; color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .enlaces small { display: block; color: var(--suave); font-weight: 400; }
+  .nuevo { width: 100%; border: 1px dashed var(--azul); background: none; color: var(--azul); font: inherit; font-weight: 650; border-radius: 14px; padding: 12px; margin-bottom: 4px; }
+  details summary { cursor: pointer; color: var(--azul); font-size: 14px; margin-top: 8px; }
+  .hist { margin: 8px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--linea); font-size: 14px; }
+  .hist div { margin: 0 0 8px; } .hist small { color: var(--suave); display: block; }
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 94vw); max-height: 90vh; }
+  dialog::backdrop { background: rgba(20, 35, 43, .45); }
+  dialog form { padding: 18px; overflow-y: auto; max-height: 90vh; }
+  dialog h3 { margin: 0 0 4px; font-size: 18px; }
+  dialog .sub { color: var(--suave); font-size: 14px; margin: 0 0 6px; }
+  dialog label { display: block; font-weight: 600; font-size: 14.5px; margin: 12px 0 5px; }
+  dialog label.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  dialog label.check input { width: 20px; height: 20px; margin: 0; }
+  dialog .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog .dos label { margin-top: 12px; }
+  dialog .pie { display: flex; gap: 8px; margin-top: 16px; }
+  dialog .pie button { flex: 1; font: inherit; font-weight: 650; border-radius: 12px; padding: 12px; border: 1px solid var(--linea); background: #fff; color: var(--tinta); }
+  dialog .pie button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  dialog .pie button.peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+  .lectura { background: #e3ecfa; color: var(--azul); border-radius: 12px; padding: 9px 12px; font-size: 14px; margin-bottom: 12px; }
+  .semana { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .semana b { font-size: 17px; text-align: center; flex: 1; }
+  .semana button { border: 1px solid var(--linea); background: #fff; font: inherit; font-weight: 600; border-radius: 10px; padding: 7px 12px; color: var(--azul); }
+  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+  .botones button { border: 1px dashed var(--azul); background: none; color: var(--azul); font: inherit; font-weight: 650; border-radius: 14px; padding: 11px 6px; }
+  .dia { margin-top: 18px; } .dia.hoy h2 { color: var(--azul); }
+  .hueco { display: flex; gap: 10px; align-items: flex-start; }
+  .hueco .hora { width: 54px; flex: none; font-weight: 650; font-variant-numeric: tabular-nums; padding-top: 12px; font-size: 15px; }
+  .hueco .hora small { display: block; color: var(--suave); font-weight: 400; font-size: 12.5px; }
+  .hueco .cont { flex: 1; min-width: 0; }
+  .libre { border: 1px dashed var(--linea); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--suave); background: #fbfaf6; }
+  .libre button { border: 0; background: none; font: inherit; font-weight: 650; color: var(--azul); padding: 4px 6px; }
+  .libre button.quitar { color: var(--suave); font-weight: 400; }
+  .aviso.anulada, .aviso.no_vino { opacity: .6; }
+  .chips7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .chips7 label { margin: 0 !important; border: 1px solid var(--linea); border-radius: 10px; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; }
+  .chips7 input { display: none; }
+  .chips7 label:has(input:checked) { background: #eef2fa; border-color: var(--azul); color: var(--azul); }
+  .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .tres label { margin-top: 12px !important; }
+  .nota { color: var(--suave); font-size: 13.5px; margin: 6px 0 0; }
+</style>
+</head>
+<body>
+<header><a href="index.html">‹ CEPA</a><b>Fisioterapia</b></header>
+<main>
+  <div class="semana"><button id="ant" aria-label="Semana anterior">‹</button><b id="tSemana">…</b><button id="sig" aria-label="Semana siguiente">›</button><button id="hoy">Hoy</button></div>
+  <div class="cifras" id="cifras"></div>
+  <div class="botones"><button id="btnAbrir">+ Abrir huecos</button><button id="btnCita">+ Apuntar cita</button></div>
+  <div class="msg" id="msg">Cargando…</div>
+  <div id="agenda"></div>
+</main>
+
+<dialog id="dlg"><form id="dlgForm" method="dialog">
+  <h3 id="dTitulo"></h3><p class="sub" id="dSub"></p>
+  <div id="dCampos"></div>
+  <div class="msg" id="dMsg"></div>
+  <div class="pie"><button type="button" id="dCancelar">Cancelar</button><button class="prin" id="dOk">Guardar</button></div>
+</form></dialog>
+
+<script>
+// ====== CONFIGURACIÓN (la misma que index.html) ======
+const API_URL = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";
+// =====================================================
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const guardado = {
+  leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+};
+const TOKEN = guardado.leer('fichar_token');
+let SESION = guardado.leer('mizona_sesion');
+async function entrarConEnlace() {
+  if (!TOKEN) throw new Error('Abre CEPA desde tu enlace personal.');
+  const r = await api('entrar', { token: TOKEN });
+  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+}
+// La sesión caducada se renueva antes de hacer nada; un cambio nunca se repite solo
+async function api(accion, datos) {
+  let r;
+  try { r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ accion, sesion: SESION }, datos || {})) }); }
+  catch (e) { throw new Error(datos && datos.op && datos.op !== 'semana' ? 'No se ha podido confirmar si el cambio se ha guardado. Recarga y compruébalo antes de repetirlo.' : 'No se ha podido conectar con el club.'); }
+  if (!r.ok) throw new Error('No se ha podido conectar con el club.');
+  const j = await r.json();
+  if (!j.ok) {
+    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrarConEnlace(); return api(accion, datos); }
+    throw new Error(j.error);
+  }
+  return j;
+}
+const fisio = (op, datos) => api('fisio', Object.assign({ op, desde: DESDE }, datos || {}));
+const ESTADOS = { pendiente: ['alta', 'Por confirmar'], confirmada: ['azul', 'Confirmada'], atendida: ['verde', 'Atendida'], no_vino: ['rojo', 'No vino'], anulada: ['gris', 'Anulada'] };
+const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const hoyYmd = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+const sumar = (f, n) => { const d = new Date(f + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const lunesDe = (f) => sumar(f, -((new Date(f + 'T12:00:00Z').getUTCDay() + 6) % 7));
+const fCorta = (f) => new Date(f + 'T12:00:00Z').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+let DESDE = lunesDe(hoyYmd()), D = null;
+
+function msg(t, tipo) { $('msg').textContent = t || ''; $('msg').className = 'msg ' + (tipo || ''); }
+
+function tarjetaCita(c) {
+  const [cl, tx] = ESTADOS[c.estado] || ['', c.estado];
+  const b = [];
+  if (c.estado === 'pendiente') b.push(['confirmada', 'Confirmar', 'prin']);
+  if (['pendiente', 'confirmada'].includes(c.estado)) b.push(['atendida', 'Atendida', c.estado === 'confirmada' ? 'prin' : ''], ['no_vino', 'No vino'], ['anulada', 'Anular', 'peligro']);
+  if (['atendida', 'no_vino', 'anulada'].includes(c.estado)) b.push(['confirmada', 'Volver a confirmada']);
+  b.push(['editar', 'Editar']);
+  return `<div class="aviso ${c.estado}">
+    <div class="cab"><b>${esc(c.nombre)}</b><span class="chip ${cl}" style="margin:0">${tx}</span></div>
+    ${c.grupo ? `<div class="dato">👥 <span>${esc(c.grupo)}</span></div>` : ''}
+    ${c.motivo ? `<div class="obs">${esc(c.motivo)}</div>` : ''}
+    ${c.telefono ? `<div class="dato">📞 <span><a href="tel:${esc(c.telefono)}">${esc(c.telefono)}</a></span></div>` : ''}
+    ${c.email ? `<div class="dato">✉️ <span>${esc(c.email)}</span></div>` : ''}
+    ${c.nota ? `<div class="dato">📝 <span>${esc(c.nota)}</span></div>` : ''}
+    <div class="acciones">${b.map(([a, t, k]) => `<button class="${k || ''}" data-c="${c.id}" data-a="${a}">${t}</button>`).join('')}</div>
+  </div>`;
+}
+
+function pintar() {
+  const hoy = D.hoy, activas = D.citas.filter((c) => c.estado !== 'anulada');
+  $('tSemana').textContent = fCorta(D.desde) + ' – ' + fCorta(D.hasta);
+  const libres = D.huecos.reduce((t, h) => t + Math.max(0, h.plazas - activas.filter((c) => c.hueco_id === h.id).length), 0);
+  $('cifras').innerHTML = [[activas.length, 'citas'], [libres, 'huecos libres'], [D.citas.filter((c) => c.estado === 'atendida').length, 'atendidas']]
+    .map(([v, t]) => `<div><b>${v}</b><span>${t}</span></div>`).join('');
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const f = sumar(D.desde, i), hs = D.huecos.filter((h) => h.fecha === f), cs = D.citas.filter((c) => c.fecha === f);
+    if (!hs.length && !cs.length) continue;
+    // Filas por hora: cada hueco con sus citas, más las citas sin hueco
+    const filas = hs.map((h) => ({ h, inicio: h.inicio, fin: h.fin, citas: cs.filter((c) => c.hueco_id === h.id) }))
+      .concat(cs.filter((c) => !c.hueco_id || !hs.some((h) => h.id === c.hueco_id)).map((c) => ({ inicio: c.inicio, fin: c.fin, citas: [c] })))
+      .sort((a, b) => a.inicio.localeCompare(b.inicio));
+    html += `<div class="dia ${f === hoy ? 'hoy' : ''}"><h2><span>${DIAS[i]} ${fCorta(f)}${f === hoy ? ' · hoy' : ''}</span><span>${((n) => n === 1 ? '1 cita' : n + ' citas')(cs.filter((c) => c.estado !== 'anulada').length)}</span></h2>` +
+      filas.map((x) => {
+        const ocup = x.citas.filter((c) => c.estado !== 'anulada').length;
+        const hueco = x.h && ocup < x.h.plazas ? `<div class="libre"><span>Libre${x.h.plazas > 1 ? ` (${x.h.plazas - ocup} de ${x.h.plazas})` : ''}${x.h.nota ? ' · ' + esc(x.h.nota) : ''}</span>
+          <span><button data-h="${x.h.id}" data-a="apuntar">Apuntar</button>${ocup || x.citas.length ? '' : `<button class="quitar" data-h="${x.h.id}" data-a="quitar" title="Quitar hueco">✕</button>`}</span></div>` : '';
+        return `<div class="hueco"><div class="hora">${esc(x.inicio)}${x.fin ? `<small>${esc(x.fin)}</small>` : ''}</div><div class="cont">${x.citas.map(tarjetaCita).join('')}${hueco}</div></div>`;
+      }).join('') + '</div>';
+  }
+  $('agenda').innerHTML = html || '<p class="vacio">Esta semana no hay huecos ni citas. Pulsa «Abrir huecos» para empezar.</p>';
+}
+
+async function cargar() { msg('Cargando…'); try { D = await fisio('semana'); pintar(); msg(''); } catch (e) { msg(e.message, 'error'); } }
+const mover = (n) => { DESDE = sumar(DESDE, 7 * n); cargar(); };
+$('ant').onclick = () => mover(-1); $('sig').onclick = () => mover(1);
+$('hoy').onclick = () => { DESDE = lunesDe(hoyYmd()); cargar(); };
+
+// ---------- Diálogos ----------
+let ACCION = null;
+function dialogo(a, titulo, sub, campos, ok, peligro) {
+  ACCION = a; $('dTitulo').textContent = titulo; $('dSub').textContent = sub || ''; $('dCampos').innerHTML = campos;
+  $('dMsg').textContent = ''; $('dMsg').className = 'msg'; $('dOk').textContent = ok || 'Guardar'; $('dOk').className = peligro ? 'peligro' : 'prin'; $('dOk').disabled = false;
+  $('dlg').showModal();
+}
+$('dCancelar').onclick = () => $('dlg').close();
+const camposCita = (c, conHora) => (conHora ? `<div class="tres"><label>Día<input type="date" name="fecha" required value="${esc(c && c.fecha || hoyYmd())}"></label>
+    <label>Hora<input type="time" name="inicio" required value="${esc(c && c.inicio || '17:00')}"></label><label>Hasta<input type="time" name="fin" value="${esc(c && c.fin || '')}"></label></div>` : '') +
+  `<label>Nombre<input name="nombre" required value="${esc(c && c.nombre || '')}" placeholder="Nombre y apellidos"></label>
+  <div class="dos"><label>Teléfono<input name="telefono" type="tel" value="${esc(c && c.telefono || '')}"></label><label>Club o grupo<input name="grupo" value="${esc(c && c.grupo || '')}" placeholder="CETD, veteranos…"></label></div>
+  <label>Correo<input name="email" type="email" value="${esc(c && c.email || '')}"></label>
+  <label>Motivo<textarea name="motivo" placeholder="Qué le pasa">${esc(c && c.motivo || '')}</textarea></label>
+  <label>Notas (solo para ti)<textarea name="nota">${esc(c && c.nota || '')}</textarea></label>`;
+
+$('btnAbrir').onclick = () => dialogo({ op: 'abrir' }, 'Abrir huecos', 'Se crean huecos seguidos en los días que marques de esta semana. Los que ya existan no se duplican.',
+  `<label>Días</label><div class="chips7">${DIAS.map((d, i) => `<label><input type="checkbox" name="dia" value="${sumar(DESDE, i)}">${d.slice(0, 2)}<br><small>${Number(sumar(DESDE, i).slice(8))}</small></label>`).join('')}</div>
+   <div class="dos"><label>Desde<input type="time" name="de" required value="17:00"></label><label>Hasta<input type="time" name="a" required value="20:00"></label></div>
+   <div class="dos"><label>Cada hueco dura<select name="minutos"><option value="20">20 min</option><option value="30" selected>30 min</option><option value="45">45 min</option><option value="60">1 hora</option></select></label>
+     <label>Personas por hueco<input type="number" name="plazas" min="1" max="20" value="1"></label></div>
+   <label>Nota (opcional)<input name="nota" placeholder="Por ejemplo: solo CETD"></label><p class="nota" id="nHuecos"></p>`, 'Abrir huecos');
+$('btnCita').onclick = () => dialogo({ op: 'cita' }, 'Apuntar cita', 'A una hora concreta, aunque no haya hueco abierto.', camposCita(null, true));
+$('dlgForm').addEventListener('input', () => {
+  if (ACCION.op !== 'abrir') return;
+  const f = $('dlgForm'), dias = f.querySelectorAll('input[name=dia]:checked').length, m = (s) => s ? Number(s.slice(0, 2)) * 60 + Number(s.slice(3, 5)) : 0;
+  const n = Math.max(0, Math.floor((m(f.a.value) - m(f.de.value)) / Number(f.minutos.value)));
+  $('nHuecos').textContent = dias ? `Se abrirán ${n * dias} huecos (${n} por día).` : '';
+});
+$('agenda').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-a]'); if (!b) return;
+  if (b.dataset.h) {
+    const h = D.huecos.find((x) => String(x.id) === b.dataset.h);
+    if (b.dataset.a === 'quitar') return dialogo({ op: 'borrarHueco', id: h.id }, 'Quitar hueco', `${DIAS[(new Date(h.fecha + 'T12:00:00Z').getUTCDay() + 6) % 7]} ${fCorta(h.fecha)} · ${h.inicio}–${h.fin}`, '', 'Quitar', true);
+    return dialogo({ op: 'cita', hueco_id: h.id }, 'Apuntar cita', `${fCorta(h.fecha)} · ${h.inicio}–${h.fin}`, camposCita(null, false));
+  }
+  const c = D.citas.find((x) => String(x.id) === b.dataset.c), a = b.dataset.a;
+  const sub = `${c.nombre} · ${fCorta(c.fecha)} ${c.inicio}`;
+  if (a === 'editar') return dialogo({ op: 'cita', id: c.id }, 'Editar cita', sub, camposCita(c, !c.hueco_id));
+  const t = { confirmada: 'Confirmar la cita', atendida: 'Marcar como atendida', no_vino: 'No vino', anulada: 'Anular la cita' }[a];
+  dialogo({ op: 'estado', id: c.id, estado: a }, t, sub, `<label>Nota (opcional)<textarea name="nota">${esc(c.nota || '')}</textarea></label>`,
+    { confirmada: 'Confirmar', atendida: 'Atendida', no_vino: 'Guardar', anulada: 'Anular' }[a], a === 'anulada');
+});
+$('dlgForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const f = ev.target, d = Object.assign({}, ACCION);
+  f.querySelectorAll('[name]').forEach((el) => { if (el.name !== 'dia') d[el.name] = el.value.trim(); });
+  if (d.op === 'abrir') { d.fechas = [...f.querySelectorAll('input[name=dia]:checked')].map((x) => x.value); if (!d.fechas.length) { $('dMsg').textContent = 'Marca al menos un día.'; $('dMsg').className = 'msg error'; return; } }
+  const op = d.op; delete d.op;
+  $('dOk').disabled = true; $('dMsg').textContent = 'Guardando…'; $('dMsg').className = 'msg';
+  try {
+    D = await fisio(op, d); pintar(); $('dlg').close();
+    msg({ abrir: 'Huecos abiertos.', borrarHueco: 'Hueco quitado.', cita: 'Cita guardada.', estado: 'Hecho.' }[op], 'ok');
+  } catch (e) { $('dMsg').textContent = e.message; $('dMsg').className = 'msg error'; $('dOk').disabled = /confirmar/.test(e.message); }
+});
+
+(async function () {
+  try { if (!SESION) await entrarConEnlace(); await cargar(); }
+  catch (e) { msg(e.message, 'error'); }
+})();
+</script>
+</body>
+</html>
