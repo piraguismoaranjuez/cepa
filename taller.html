@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CEPA">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<title>Taller de reparaciones · CEPA</title>
+<style>
+  :root { --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #ddd6c8; --azul: #2e5797; --rojo: #a33b2b; --verde: #1f7a5a; --ambar: #b7791f; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #fff; border-bottom: 1px solid var(--linea); padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 5; }
+  header a { color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  header b { flex: 1; text-align: center; font-size: 17px; margin-right: 52px; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 60px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: #e7e1d5; border-radius: 12px; padding: 3px; margin-bottom: 14px; }
+  .seg button { border: 0; background: none; font: inherit; font-weight: 600; padding: 9px; border-radius: 10px; color: var(--suave); }
+  .seg button.on { background: #fff; color: var(--tinta); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .cifras div { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 10px 8px; text-align: center; }
+  .cifras b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .cifras span { font-size: 12.5px; color: var(--suave); }
+  .cifras .mal b { color: var(--rojo); } .cifras .bien b { color: var(--verde); }
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); margin: 20px 2px 8px; display: flex; justify-content: space-between; }
+  h2.rojo { color: var(--rojo); }
+  .aviso { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .aviso.fuera { border-left: 4px solid var(--rojo); }
+  .aviso .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .aviso .cab b { font-size: 16.5px; }
+  .aviso .num { color: var(--suave); font-size: 13px; white-space: nowrap; }
+  .aviso .obs { margin: 4px 0 6px; }
+  .dato { font-size: 14px; color: var(--suave); display: flex; gap: 6px; margin-top: 2px; }
+  .dato b { color: var(--tinta); font-weight: 600; }
+  .chip { display: inline-block; font-size: 12.5px; border-radius: 99px; padding: 1px 9px; background: #eee9df; margin: 6px 4px 0 0; }
+  .chip.urgente, .chip.rojo { background: #f8e6e2; color: var(--rojo); } .chip.alta { background: #f6e8cf; color: #8a5a12; }
+  .chip.verde { background: #dcefe6; color: var(--verde); } .chip.azul { background: #e3ecfa; color: var(--azul); } .chip.gris { background: #eee; color: #777; }
+  .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .acciones button { border: 1px solid var(--linea); background: #fff; color: var(--azul); font: inherit; font-size: 14px; font-weight: 600; border-radius: 10px; padding: 7px 11px; }
+  .acciones button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .acciones button.peligro { color: var(--rojo); }
+  .vacio { text-align: center; color: var(--suave); padding: 24px 10px; }
+  .oculto { display: none !important; }
+  .msg { min-height: 20px; margin: 8px 0; font-size: 15px; } .msg.error { color: var(--rojo); } .msg.ok { color: var(--verde); }
+  .buscar { display: flex; gap: 6px; margin-bottom: 12px; }
+  input, textarea, select { width: 100%; font: inherit; padding: 11px 12px; border: 1px solid var(--linea); border-radius: 12px; background: #fff; color: var(--tinta); }
+  textarea { min-height: 80px; resize: vertical; }
+  .buscar button, button.grande { border: 0; background: var(--azul); color: #fff; font: inherit; font-weight: 650; border-radius: 12px; padding: 0 16px; }
+  button.grande { width: 100%; padding: 14px; margin-top: 14px; }
+  button[disabled] { opacity: .5; }
+  .enlaces { display: flex; flex-direction: column; gap: 8px; margin-top: 26px; }
+  .enlaces a { display: block; background: #fff; border: 1px solid var(--linea); border-radius: 12px; padding: 12px 14px; color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .enlaces small { display: block; color: var(--suave); font-weight: 400; }
+  .nuevo { width: 100%; border: 1px dashed var(--azul); background: none; color: var(--azul); font: inherit; font-weight: 650; border-radius: 14px; padding: 12px; margin-bottom: 4px; }
+  details summary { cursor: pointer; color: var(--azul); font-size: 14px; margin-top: 8px; }
+  .hist { margin: 8px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--linea); font-size: 14px; }
+  .hist div { margin: 0 0 8px; } .hist small { color: var(--suave); display: block; }
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 94vw); max-height: 90vh; }
+  dialog::backdrop { background: rgba(20, 35, 43, .45); }
+  dialog form { padding: 18px; overflow-y: auto; max-height: 90vh; }
+  dialog h3 { margin: 0 0 4px; font-size: 18px; }
+  dialog .sub { color: var(--suave); font-size: 14px; margin: 0 0 6px; }
+  dialog label { display: block; font-weight: 600; font-size: 14.5px; margin: 12px 0 5px; }
+  dialog label.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  dialog label.check input { width: 20px; height: 20px; margin: 0; }
+  dialog .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog .dos label { margin-top: 12px; }
+  dialog .pie { display: flex; gap: 8px; margin-top: 16px; }
+  dialog .pie button { flex: 1; font: inherit; font-weight: 650; border-radius: 12px; padding: 12px; border: 1px solid var(--linea); background: #fff; color: var(--tinta); }
+  dialog .pie button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  dialog .pie button.peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+  .lectura { background: #e3ecfa; color: var(--azul); border-radius: 12px; padding: 9px 12px; font-size: 14px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<header><a href="index.html">‹ CEPA</a><b>Taller de reparaciones</b></header>
+<main>
+  <div class="seg"><button class="on" data-v="abiertas">Abiertas <span id="nAbiertas"></span></button><button data-v="historial">Historial</button></div>
+  <div class="msg" id="msg">Cargando…</div>
+
+  <section id="vAbiertas">
+    <div id="soloVer" class="lectura oculto">Puedes consultar cómo van las reparaciones. Los cambios los hace el taller.</div>
+    <div class="cifras" id="cifras"></div>
+    <button class="nuevo oculto" id="btnNueva">+ Apuntar una avería</button>
+    <div id="lista"></div>
+    <div class="enlaces" id="enlaces"></div>
+  </section>
+
+  <section id="vHistorial" class="oculto">
+    <form class="buscar" id="formBuscar"><input name="buscar" type="search" placeholder="Piragua o persona…"><button>Buscar</button></form>
+    <div id="hLista"><p class="vacio">Busca una piragua o una persona, o pulsa Buscar para ver las últimas.</p></div>
+  </section>
+</main>
+
+<dialog id="dlg"><form id="dlgForm" method="dialog">
+  <h3 id="dTitulo"></h3><p class="sub" id="dSub"></p>
+  <div id="dCampos"></div>
+  <div class="msg" id="dMsg"></div>
+  <div class="pie"><button type="button" id="dCancelar">Cancelar</button><button class="prin" id="dOk">Guardar</button></div>
+</form></dialog>
+
+<script>
+// ====== CONFIGURACIÓN (la misma que index.html) ======
+const API_URL = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";
+// =====================================================
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const guardado = {
+  leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+};
+const TOKEN = guardado.leer('fichar_token');
+let SESION = guardado.leer('mizona_sesion');
+async function entrarConEnlace() {
+  if (!TOKEN) throw new Error('Abre CEPA desde tu enlace personal.');
+  const r = await api('entrar', { token: TOKEN });
+  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+}
+// La sesión caducada se renueva antes de hacer nada; un cambio nunca se repite solo
+async function api(accion, datos) {
+  let r;
+  try { r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ accion, sesion: SESION }, datos || {})) }); }
+  catch (e) { throw new Error(datos && CAMBIOS.includes(datos.op) ? 'No se ha podido confirmar si el cambio se ha guardado. Recarga y compruébalo antes de repetirlo.' : 'No se ha podido conectar con el club.'); }
+  if (!r.ok) throw new Error('No se ha podido conectar con el club.');
+  const j = await r.json();
+  if (!j.ok) {
+    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrarConEnlace(); return api(accion, datos); }
+    throw new Error(j.error);
+  }
+  return j;
+}
+const rep = (op, datos) => api('reparaciones', Object.assign({ op }, datos || {}));
+const CAMBIOS = ['nueva', 'cita', 'recibida', 'estado', 'reparada', 'plazo', 'editar', 'descartar', 'reabrir'];
+
+let INFO = { tipos: [], prioridades: ['Urgente', 'Alta', 'Media', 'Baja'] }, DATOS = [], PUEDE = false;
+const hoyYmd = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+const masDias = (n) => { const d = new Date(hoyYmd() + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toLocaleDateString('sv-SE'); };
+const diasTxt = (n) => n === 0 ? 'hoy' : n === 1 ? '1 día' : n + ' días';
+const fueraDePlazo = (x) => x.estado !== 'Esperando la piragua' && x.prevista && x.dias < 0;
+const chipPrio = (p) => p ? `<span class="chip ${String(p).toLowerCase()}">${esc(p)}</span>` : '';
+
+function msg(t, tipo) { $('msg').textContent = t || ''; $('msg').className = 'msg ' + (tipo || ''); }
+
+function pintarCifras(r) {
+  if (!r) return;
+  $('cifras').innerHTML = [['abiertas', 'abiertas', ''], ['sinCita', 'sin cita', ''], ['porRecibir', 'por recibir', ''],
+    ['enReparacion', 'en reparación', ''], ['fueraDePlazo', 'fuera de plazo', r.fueraDePlazo ? 'mal' : ''], ['reparadas30', 'reparadas en 30 días', 'bien']]
+    .map(([k, t, c]) => `<div class="${c}"><b>${r[k] ?? '–'}</b><span>${t}</span></div>`).join('');
+  $('nAbiertas').textContent = r.abiertas ? `(${r.abiertas})` : '';
+}
+
+function tarjeta(x) {
+  const fuera = fueraDePlazo(x);
+  const lleva = x.lleva && x.lleva !== x.nombre ? x.lleva : '';
+  const b = [];
+  if (PUEDE) {
+    if (x.estado === 'Pendiente') b.push(['cita', 'Dar cita y plazo', 'prin']);
+    if (x.estado === 'Esperando la piragua') b.push(['recibida', 'Ya la tengo', 'prin'], ['cita', 'Cambiar cita']);
+    if (x.estado === 'En reparación') b.push(['reparada', 'Reparada', 'prin'], ['plazo', 'Cambiar plazo']);
+    b.push(['editar', 'Editar'], ['descartar', 'Descartar', 'peligro']);
+  }
+  return `<div class="aviso ${fuera ? 'fuera' : ''}">
+    <div class="cab"><b>${esc(x.piragua || 'Sin piragua')}</b><span class="num">fila ${esc(x.r)}</span></div>
+    <div class="obs">${esc(x.obs || '')}</div>
+    <div class="dato">📅 <span>Aviso del <b>${esc(x.aviso || '')}</b> · lleva <b>${diasTxt(Number(x.diasAviso) || 0)}</b> esperando</span></div>
+    <div class="dato">👤 <span>Avisa <b>${esc(x.nombre || '—')}</b>${lleva ? ` · la lleva <b>${esc(lleva)}</b>` : ''}${x.veces > 1 ? ` · ${x.veces} piraguas traídas` : ''}</span></div>
+    ${x.entrega ? `<div class="dato">📍 <span>Traerla el <b>${esc(x.entregaTxt || x.entrega)}</b>${x.diasEntrega != null && x.estado === 'Esperando la piragua' ? ` (${x.diasEntrega < 0 ? 'hace ' + diasTxt(-x.diasEntrega) : x.diasEntrega === 0 ? 'hoy' : 'en ' + diasTxt(x.diasEntrega)})` : ''}</span></div>` : ''}
+    ${x.prevista ? `<div class="dato">⏱ <span>Plazo <b>${esc(x.previstaTxt || x.prevista)}</b>${x.dias != null ? (x.dias < 0 ? ` · <b style="color:var(--rojo)">${diasTxt(-x.dias)} fuera de plazo</b>` : x.dias === 0 ? ' · vence hoy' : ` · quedan ${diasTxt(x.dias)}`) : ''}</span></div>` : ''}
+    ${x.com ? `<div class="dato">💬 <span>${esc(x.com)}</span></div>` : ''}
+    <div>${chipPrio(x.prio)}${x.tipo ? `<span class="chip">${esc(x.tipo)}</span>` : ''}</div>
+    ${b.length ? `<div class="acciones">${b.map(([a, t, c]) => `<button class="${c || ''}" data-a="${a}" data-r="${esc(x.r)}">${t}</button>`).join('')}</div>` : ''}
+  </div>`;
+}
+
+function pintarLista() {
+  const g = [
+    ['Fuera de plazo', DATOS.filter(fueraDePlazo), 'rojo'],
+    ['En reparación', DATOS.filter((x) => x.estado === 'En reparación' && !fueraDePlazo(x))],
+    ['Por recibir', DATOS.filter((x) => x.estado === 'Esperando la piragua')],
+    ['Avisos nuevos sin cita', DATOS.filter((x) => x.estado === 'Pendiente' && !fueraDePlazo(x))]
+  ];
+  $('lista').innerHTML = DATOS.length ? g.filter(([, l]) => l.length).map(([t, l, c]) =>
+    `<h2 class="${c || ''}"><span>${t}</span><span>${l.length}</span></h2>` + l.map(tarjeta).join('')).join('')
+    : '<p class="vacio">No hay reparaciones abiertas. 👌</p>';
+}
+
+async function cargar() {
+  const [a, r] = await Promise.all([rep('abiertas'), rep('resumen')]);
+  PUEDE = a.permiso === 'cambiar';
+  DATOS = a.datos || []; pintarLista(); pintarCifras(r);
+  $('btnNueva').classList.toggle('oculto', !PUEDE); $('soloVer').classList.toggle('oculto', PUEDE);
+}
+
+// ---------- Diálogo de cada acción ----------
+let ACCION = null;
+const opcionesSel = (l, v) => l.map((o) => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('');
+function abrir(a, x) {
+  ACCION = { a, x };
+  const f = $('dlgForm'), t = { cita: 'Dar cita y plazo', recibida: '¿Ya tienes la piragua?', reparada: 'Marcar como reparada', plazo: 'Cambiar el plazo',
+    editar: 'Editar el aviso', descartar: 'Descartar el aviso', nueva: 'Apuntar una avería', reabrir: 'Reabrir el aviso' }[a];
+  $('dTitulo').textContent = t;
+  $('dSub').textContent = x ? `${x.piragua || ''} · ${x.nombre || ''}` : 'Para averías que nadie ha avisado por el formulario.';
+  $('dMsg').textContent = ''; $('dMsg').className = 'msg';
+  $('dOk').textContent = { recibida: 'Sí, ya la tengo', descartar: 'Descartar', reparada: 'Marcar reparada', reabrir: 'Reabrir' }[a] || 'Guardar';
+  $('dOk').className = a === 'descartar' ? 'peligro' : 'prin'; $('dOk').disabled = false;
+  const fuera = x && x.dias != null && x.dias < 0;
+  $('dCampos').innerHTML = {
+    cita: `<div class="dos"><label>Traerla el día<input type="date" name="entrega" required value="${esc(x && x.entrega || masDias(1))}"></label>
+      <label>Plazo de reparación<input type="date" name="plazo" required value="${esc(x && x.prevista || masDias(8))}"></label></div>
+      <label class="check"><input type="checkbox" name="avisar" checked> Enviarle el correo con la cita</label>`,
+    recibida: '<p>Pasará a «En reparación».</p>',
+    reparada: `<label>Comentario (opcional)<textarea name="comentario" placeholder="Qué se ha hecho…"></textarea></label>
+      <label class="check"><input type="checkbox" name="avisar" checked> Avisarle por correo de que ya está</label>`,
+    plazo: `<label>Nuevo plazo<input type="date" name="fecha" required value="${esc(x && x.prevista || masDias(7))}"></label>
+      <label>Motivo${fuera ? ' (obligatorio: el plazo ya pasó)' : ' (opcional)'}<textarea name="motivo" ${fuera ? 'required' : ''}></textarea></label>`,
+    editar: `<label>Tipo de avería<select name="tipo">${opcionesSel(INFO.tipos, x && x.tipo)}</select></label>
+      <label>Prioridad<select name="prio">${opcionesSel(INFO.prioridades, x && x.prio)}</select></label>
+      <label>Quién la lleva al taller<input name="lleva" value="${esc(x && x.lleva || '')}" placeholder="Vacío = quien avisa"></label>`,
+    descartar: '<label>Motivo<textarea name="motivo" required placeholder="Por qué no se repara…"></textarea></label>',
+    reabrir: '<label>Motivo (opcional)<textarea name="motivo"></textarea></label>',
+    nueva: `<label>Piragua<input name="piragua" required placeholder="Modelo y número"></label>
+      <label>Avería<textarea name="obs" required placeholder="Qué hay que reparar"></textarea></label>
+      <div class="dos"><label>Quién avisa<input name="nombre" placeholder="Opcional"></label><label>Quién la lleva<input name="lleva" placeholder="Opcional"></label></div>
+      <label>Prioridad<select name="prio">${opcionesSel(INFO.prioridades, 'Media')}</select></label>`
+  }[a];
+  $('dlg').showModal();
+}
+$('dCancelar').onclick = () => $('dlg').close();
+$('dlgForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const f = ev.target, { a, x } = ACCION, d = {};
+  f.querySelectorAll('[name]').forEach((el) => (d[el.name] = el.type === 'checkbox' ? el.checked : el.value.trim()));
+  if (a === 'cita' && d.plazo < d.entrega) { $('dMsg').textContent = 'El plazo no puede ser antes del día de entrega.'; $('dMsg').className = 'msg error'; return; }
+  if (x) d.fila = x.r;
+  $('dOk').disabled = true; $('dMsg').textContent = 'Guardando…'; $('dMsg').className = 'msg';
+  try {
+    const r = await rep(a, d);
+    $('dlg').close();
+    if (a === 'reabrir') { $('formBuscar').requestSubmit(); }
+    if (r.datos) { DATOS = r.datos; pintarLista(); }
+    rep('resumen').then(pintarCifras).catch(() => {});
+    msg({ cita: 'Cita guardada', recibida: 'En reparación', reparada: 'Marcada como reparada', plazo: 'Plazo cambiado', editar: 'Guardado',
+      descartar: 'Aviso descartado', nueva: 'Avería apuntada', reabrir: 'Aviso reabierto' }[a] + '.', 'ok');
+  } catch (e) {
+    // Se enseña el error tal cual y no se repite el cambio
+    $('dMsg').textContent = e.message; $('dMsg').className = 'msg error';
+    $('dOk').disabled = /confirmar/.test(e.message);
+  }
+});
+$('lista').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-a]'); if (!b) return;
+  abrir(b.dataset.a, DATOS.find((x) => String(x.r) === b.dataset.r));
+});
+$('btnNueva').onclick = () => abrir('nueva', null);
+
+// ---------- Historial ----------
+let HIST = [];
+const chipEstado = (e) => `<span class="chip ${{ Hecho: 'verde', Descartado: 'gris', 'En reparación': 'azul', Pendiente: 'alta', 'Esperando la piragua': 'alta' }[e] || ''}">${esc(e)}</span>`;
+$('formBuscar').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const b = ev.target.querySelector('button'); b.disabled = true; $('hLista').innerHTML = '<p class="vacio">Buscando…</p>';
+  try {
+    const r = await rep('historial', { buscar: ev.target.buscar.value.trim() });
+    HIST = r.datos || [];
+    $('hLista').innerHTML = (r.total > HIST.length ? `<p class="dato">Se muestran los ${HIST.length} más recientes de ${r.total}.</p>` : '') +
+      (HIST.length ? HIST.map((x) => { const c = x.cambios || []; return `<div class="aviso">
+        <div class="cab"><b>${esc(x.piragua || '')}</b><span class="num">${esc(x.aviso || '')}</span></div>
+        <div class="obs">${esc(x.obs || '')}</div>
+        <div class="dato">👤 <span>${esc(x.nombre || '—')}${x.lleva && x.lleva !== x.nombre ? ' · la lleva ' + esc(x.lleva) : ''}</span></div>
+        ${x.com ? `<div class="dato">💬 <span>${esc(x.com)}</span></div>` : ''}
+        <div>${chipEstado(x.estado)}${chipPrio(x.prio)}${x.tipo ? `<span class="chip">${esc(x.tipo)}</span>` : ''}</div>
+        ${c.length ? `<details><summary>Cambios (${c.length})</summary><div class="hist">${c.map((k) => `<div>${esc(k.que || k['qué'] || '')}${k.antes || k.despues || k['después'] ? `: ${esc(k.antes || '—')} → <b>${esc(k.despues || k['después'] || '—')}</b>` : ''}${k.comentario ? `<br>${esc(k.comentario)}` : ''}<small>${esc(k.fecha || '')}${k.quien || k['quién'] ? ' · ' + esc(k.quien || k['quién']) : ''}</small></div>`).join('')}</div></details>` : ''}
+        ${PUEDE && ['Hecho', 'Descartado'].includes(x.estado) ? `<div class="acciones"><button data-h="${esc(x.r)}">Reabrir</button></div>` : ''}
+      </div>`; }).join('') : '<p class="vacio">No hay nada con ese texto.</p>');
+  } catch (e) { $('hLista').innerHTML = `<p class="msg error">${esc(e.message)}</p>`; }
+  finally { b.disabled = false; }
+});
+$('hLista').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button[data-h]'); if (b) abrir('reabrir', HIST.find((x) => String(x.r) === b.dataset.h));
+});
+
+document.querySelector('.seg').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return;
+  document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
+  $('vAbiertas').classList.toggle('oculto', b.dataset.v !== 'abiertas'); $('vHistorial').classList.toggle('oculto', b.dataset.v !== 'historial');
+  if (b.dataset.v === 'historial' && !HIST.length) $('formBuscar').requestSubmit();
+});
+
+(async function () {
+  try {
+    if (!SESION) await entrarConEnlace();
+    await cargar(); msg('');
+    rep('info').then((i) => {
+      INFO = i;
+      $('enlaces').innerHTML = (i.panelSocios ? `<a href="${esc(i.panelSocios)}" target="_blank" rel="noopener">Panel de socios ↗<small>Donde cada socio consulta cómo va su piragua</small></a>` : '') +
+        (i.formulario ? `<a href="${esc(i.formulario)}" target="_blank" rel="noopener">Formulario de averías ↗<small>El que rellenan los socios para avisar</small></a>` : '');
+    }).catch(() => {});
+  } catch (e) { msg(e.message, 'error'); }
+})();
+</script>
+</body>
+</html>
