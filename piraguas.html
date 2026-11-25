@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CEPA">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icono-192.png">
+<title>Reservas de piraguas · CEPA</title>
+<style>
+  :root { --fondo: #f4f1ea; --tinta: #14232b; --suave: #5d6b72; --linea: #ddd6c8; --azul: #2e5797; --rojo: #a33b2b; --verde: #1f7a5a; --ambar: #b7791f; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; min-height: 100vh; background: var(--fondo); color: var(--tinta); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #fff; border-bottom: 1px solid var(--linea); padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 5; }
+  header a { color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  header b { flex: 1; text-align: center; font-size: 17px; margin-right: 52px; }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 60px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: #e7e1d5; border-radius: 12px; padding: 3px; margin-bottom: 14px; }
+  .seg button { border: 0; background: none; font: inherit; font-weight: 600; padding: 9px; border-radius: 10px; color: var(--suave); }
+  .seg button.on { background: #fff; color: var(--tinta); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .cifras { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .cifras div { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 10px 8px; text-align: center; }
+  .cifras b { display: block; font-size: 24px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .cifras span { font-size: 12.5px; color: var(--suave); }
+  .cifras .mal b { color: var(--rojo); } .cifras .bien b { color: var(--verde); }
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); margin: 20px 2px 8px; display: flex; justify-content: space-between; }
+  h2.rojo { color: var(--rojo); }
+  .aviso { background: #fff; border: 1px solid var(--linea); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+  .aviso.fuera { border-left: 4px solid var(--rojo); }
+  .aviso .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .aviso .cab b { font-size: 16.5px; }
+  .aviso .num { color: var(--suave); font-size: 13px; white-space: nowrap; }
+  .aviso .obs { margin: 4px 0 6px; }
+  .dato { font-size: 14px; color: var(--suave); display: flex; gap: 6px; margin-top: 2px; }
+  .dato b { color: var(--tinta); font-weight: 600; }
+  .chip { display: inline-block; font-size: 12.5px; border-radius: 99px; padding: 1px 9px; background: #eee9df; margin: 6px 4px 0 0; }
+  .chip.urgente, .chip.rojo { background: #f8e6e2; color: var(--rojo); } .chip.alta { background: #f6e8cf; color: #8a5a12; }
+  .chip.verde { background: #dcefe6; color: var(--verde); } .chip.azul { background: #e3ecfa; color: var(--azul); } .chip.gris { background: #eee; color: #777; }
+  .acciones { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .acciones button { border: 1px solid var(--linea); background: #fff; color: var(--azul); font: inherit; font-size: 14px; font-weight: 600; border-radius: 10px; padding: 7px 11px; }
+  .acciones button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .acciones button.peligro { color: var(--rojo); }
+  .vacio { text-align: center; color: var(--suave); padding: 24px 10px; }
+  .oculto { display: none !important; }
+  .msg { min-height: 20px; margin: 8px 0; font-size: 15px; } .msg.error { color: var(--rojo); } .msg.ok { color: var(--verde); }
+  .buscar { display: flex; gap: 6px; margin-bottom: 12px; }
+  input, textarea, select { width: 100%; font: inherit; padding: 11px 12px; border: 1px solid var(--linea); border-radius: 12px; background: #fff; color: var(--tinta); }
+  textarea { min-height: 80px; resize: vertical; }
+  .buscar button, button.grande { border: 0; background: var(--azul); color: #fff; font: inherit; font-weight: 650; border-radius: 12px; padding: 0 16px; }
+  button.grande { width: 100%; padding: 14px; margin-top: 14px; }
+  button[disabled] { opacity: .5; }
+  .enlaces { display: flex; flex-direction: column; gap: 8px; margin-top: 26px; }
+  .enlaces a { display: block; background: #fff; border: 1px solid var(--linea); border-radius: 12px; padding: 12px 14px; color: var(--azul); text-decoration: none; font-weight: 600; font-size: 15px; }
+  .enlaces small { display: block; color: var(--suave); font-weight: 400; }
+  .nuevo { width: 100%; border: 1px dashed var(--azul); background: none; color: var(--azul); font: inherit; font-weight: 650; border-radius: 14px; padding: 12px; margin-bottom: 4px; }
+  details summary { cursor: pointer; color: var(--azul); font-size: 14px; margin-top: 8px; }
+  .hist { margin: 8px 0 0; padding: 0 0 0 12px; border-left: 2px solid var(--linea); font-size: 14px; }
+  .hist div { margin: 0 0 8px; } .hist small { color: var(--suave); display: block; }
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(480px, 94vw); max-height: 90vh; }
+  dialog::backdrop { background: rgba(20, 35, 43, .45); }
+  dialog form { padding: 18px; overflow-y: auto; max-height: 90vh; }
+  dialog h3 { margin: 0 0 4px; font-size: 18px; }
+  dialog .sub { color: var(--suave); font-size: 14px; margin: 0 0 6px; }
+  dialog label { display: block; font-weight: 600; font-size: 14.5px; margin: 12px 0 5px; }
+  dialog label.check { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  dialog label.check input { width: 20px; height: 20px; margin: 0; }
+  dialog .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog .dos label { margin-top: 12px; }
+  dialog .pie { display: flex; gap: 8px; margin-top: 16px; }
+  dialog .pie button { flex: 1; font: inherit; font-weight: 650; border-radius: 12px; padding: 12px; border: 1px solid var(--linea); background: #fff; color: var(--tinta); }
+  dialog .pie button.prin { background: var(--azul); border-color: var(--azul); color: #fff; }
+  dialog .pie button.peligro { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+  .lectura { background: #e3ecfa; color: var(--azul); border-radius: 12px; padding: 9px 12px; font-size: 14px; margin-bottom: 12px; }
+  .semana { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .semana b { font-size: 17px; text-align: center; flex: 1; }
+  .semana button { border: 1px solid var(--linea); background: #fff; font: inherit; font-weight: 600; border-radius: 10px; padding: 7px 12px; color: var(--azul); }
+  .botones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+  .botones button { border: 1px dashed var(--azul); background: none; color: var(--azul); font: inherit; font-weight: 650; border-radius: 14px; padding: 11px 6px; }
+  .dia { margin-top: 18px; } .dia.hoy h2 { color: var(--azul); }
+  .hueco { display: flex; gap: 10px; align-items: flex-start; }
+  .hueco .hora { width: 54px; flex: none; font-weight: 650; font-variant-numeric: tabular-nums; padding-top: 12px; font-size: 15px; }
+  .hueco .hora small { display: block; color: var(--suave); font-weight: 400; font-size: 12.5px; }
+  .hueco .cont { flex: 1; min-width: 0; }
+  .libre { border: 1px dashed var(--linea); border-radius: 14px; padding: 10px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--suave); background: #fbfaf6; }
+  .libre button { border: 0; background: none; font: inherit; font-weight: 650; color: var(--azul); padding: 4px 6px; }
+  .libre button.quitar { color: var(--suave); font-weight: 400; }
+  .aviso.anulada, .aviso.no_vino { opacity: .6; }
+  .chips7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .chips7 label { margin: 0 !important; border: 1px solid var(--linea); border-radius: 10px; text-align: center; padding: 8px 0; font-weight: 600; font-size: 14px; }
+  .chips7 input { display: none; }
+  .chips7 label:has(input:checked) { background: #eef2fa; border-color: var(--azul); color: var(--azul); }
+  .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .tres label { margin-top: 12px !important; }
+  .nota { color: var(--suave); font-size: 13.5px; margin: 6px 0 0; }
+  .barco h3 { margin: 0; font-size: 16.5px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .barco h3 small { color: var(--suave); font-weight: 400; font-size: 13px; }
+  .res { border-top: 1px solid #eee8dc; padding: 8px 0 2px; margin-top: 8px; }
+  .res .lin { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .res .lin b { font-variant-numeric: tabular-nums; }
+  .res.bloqueo { color: var(--suave); }
+  .res.anulada, .res.no_vino { opacity: .55; }
+  .agua { background: #e3ecfa; border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+  .agua > b { color: var(--azul); }
+  .agua .fila { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0 2px; border-top: 1px solid #cfdcf3; margin-top: 6px; }
+  .agua small { color: var(--suave); }
+  .agua button { border: 0; background: var(--azul); color: #fff; font: inherit; font-weight: 600; border-radius: 10px; padding: 6px 10px; white-space: nowrap; }
+  .seg.tres { grid-template-columns: 1fr 1fr 1fr; }
+  .tipo2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .tipo2 label { margin: 0 !important; border: 1px solid var(--linea); border-radius: 10px; text-align: center; padding: 9px; font-weight: 600; }
+  .tipo2 input { display: none; }
+  .tipo2 label:has(input:checked) { background: #eef2fa; border-color: var(--azul); color: var(--azul); }
+  .buscar input { flex: 1; }
+</style>
+</head>
+<body>
+<header><a href="index.html">‹ CEPA</a><b>Reservas de piraguas</b></header>
+<main>
+  <div class="seg tres" id="seg"><button class="on" data-v="dia">Día</button><button data-v="hist">Historial</button><button data-v="flota">Flota</button></div>
+  <div class="msg" id="msg">Cargando…</div>
+
+  <section id="vDia">
+    <div class="semana"><button id="ant" aria-label="Día anterior">‹</button><b id="tDia">…</b><button id="sig" aria-label="Día siguiente">›</button><button id="hoy">Hoy</button></div>
+    <div id="agua"></div>
+    <div class="cifras" id="cifras"></div>
+    <div class="botones" style="grid-template-columns:1fr"><button id="btnReservar">+ Reservar o bloquear una piragua</button></div>
+    <div id="barcos"></div>
+  </section>
+
+  <section id="vHist" class="oculto">
+    <form class="buscar" id="formBuscar"><input name="buscar" type="search" placeholder="Socio o piragua…"><button>Buscar</button></form>
+    <div id="hLista"></div>
+  </section>
+
+  <section id="vFlota" class="oculto">
+    <p class="nota" style="margin:0 2px 10px">Las piraguas que se prestan a socios adultos. Si una se rompe o deja de prestarse, quítala de «Disponible» y no se podrá reservar.</p>
+    <div class="botones" style="grid-template-columns:1fr"><button id="btnPiragua">+ Añadir piragua</button></div>
+    <div id="fLista"></div>
+  </section>
+</main>
+
+<dialog id="dlg"><form id="dlgForm" method="dialog">
+  <h3 id="dTitulo"></h3><p class="sub" id="dSub"></p>
+  <div id="dCampos"></div>
+  <div class="msg" id="dMsg"></div>
+  <div class="pie"><button type="button" id="dCancelar">Cancelar</button><button class="prin" id="dOk">Guardar</button></div>
+</form></dialog>
+
+<script>
+// ====== CONFIGURACIÓN (la misma que index.html) ======
+const API_URL = "https://script.google.com/macros/s/AKfycbynhxyMOkP629Ko55Y-681TfYM0XL3FBwuvoEyl7ewNvxhtzpwJAjYjCUg8nASPufun/exec";
+// =====================================================
+
+const $ = (id) => document.getElementById(id);
+const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const guardado = {
+  leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+};
+const TOKEN = guardado.leer('fichar_token');
+let SESION = guardado.leer('mizona_sesion');
+async function entrarConEnlace() {
+  if (!TOKEN) throw new Error('Abre CEPA desde tu enlace personal.');
+  const r = await api('entrar', { token: TOKEN });
+  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+}
+// La sesión caducada se renueva antes de hacer nada; un cambio nunca se repite solo
+async function api(accion, datos) {
+  let r;
+  try { r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ accion, sesion: SESION }, datos || {})) }); }
+  catch (e) { throw new Error(datos && datos.op && !['dia', 'historial'].includes(datos.op) ? 'No se ha podido confirmar si el cambio se ha guardado. Recarga y compruébalo antes de repetirlo.' : 'No se ha podido conectar con el club.'); }
+  if (!r.ok) throw new Error('No se ha podido conectar con el club.');
+  const j = await r.json();
+  if (!j.ok) {
+    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrarConEnlace(); return api(accion, datos); }
+    throw new Error(j.error);
+  }
+  return j;
+}
+const pir = (op, datos) => api('piraguas', Object.assign({ op, fecha: FECHA }, datos || {}));
+const EST = { reservada: ['azul', 'Reservada'], en_agua: ['alta', 'En el agua'], devuelta: ['verde', 'Devuelta'], no_vino: ['rojo', 'No vino'], anulada: ['gris', 'Anulada'] };
+const hoyYmd = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+const sumar = (f, n) => { const d = new Date(f + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const fLarga = (f) => { const t = new Date(f + 'T12:00:00Z').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' }); return t[0].toUpperCase() + t.slice(1); };
+const fCorta = (f) => f.slice(8) + '/' + f.slice(5, 7) + '/' + f.slice(0, 4);
+const min = (h) => Number(h.slice(0, 2)) * 60 + Number(h.slice(3, 5));
+const hora = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+let FECHA = hoyYmd(), D = null;
+const nombreDe = (id) => ((D && D.flota.find((p) => p.id === id)) || {}).nombre || '¿?';
+
+function msg(t, tipo) { $('msg').textContent = t || ''; $('msg').className = 'msg ' + (tipo || ''); }
+
+function botonesRes(r) {
+  if (r.tipo === 'bloqueo') return r.estado === 'anulada' ? '' : [['editar', 'Editar'], ['anulada', 'Quitar bloqueo', 'peligro']];
+  const b = [];
+  if (r.estado === 'reservada') b.push(['en_agua', 'Sale', 'prin'], ['no_vino', 'No vino'], ['anulada', 'Anular', 'peligro'], ['editar', 'Editar']);
+  if (r.estado === 'en_agua') b.push(['devuelta', 'Ha vuelto', 'prin'], ['reservada', 'Deshacer salida']);
+  if (['devuelta', 'no_vino', 'anulada'].includes(r.estado)) b.push(['reservada', 'Volver a reservada']);
+  return b;
+}
+function lineaRes(r) {
+  const [cl, tx] = EST[r.estado] || ['', r.estado], b = botonesRes(r) || [];
+  return `<div class="res ${r.tipo} ${r.estado}"><div class="lin"><span><b>${r.inicio}–${r.fin}</b> · ${r.tipo === 'bloqueo' ? '🚫 ' : ''}${esc(r.socio)}</span>
+    ${r.tipo === 'bloqueo' ? (r.estado === 'anulada' ? '<span class="chip gris" style="margin:0">Quitado</span>' : '<span class="chip gris" style="margin:0">Bloqueada</span>') : `<span class="chip ${cl}" style="margin:0">${tx}</span>`}</div>
+    ${r.salida || r.entrada ? `<div class="dato">⏱ <span>${r.salida ? 'Salió ' + r.salida : ''}${r.entrada ? ' · volvió ' + r.entrada : ''}</span></div>` : ''}
+    ${r.telefono ? `<div class="dato">📞 <span><a href="tel:${esc(r.telefono)}">${esc(r.telefono)}</a></span></div>` : ''}
+    ${r.nota ? `<div class="dato">📝 <span>${esc(r.nota)}</span></div>` : ''}
+    ${b.length ? `<div class="acciones">${b.map(([a, t, k]) => `<button class="${k || ''}" data-r="${r.id}" data-a="${a}">${t}</button>`).join('')}</div>` : ''}</div>`;
+}
+function pintar() {
+  $('tDia').textContent = fLarga(D.fecha) + (D.fecha === D.hoy ? ' · hoy' : '');
+  $('agua').innerHTML = D.enAgua.length ? `<div class="agua"><b>En el agua ahora (${D.enAgua.length})</b>${D.enAgua.map((r) => `<div class="fila"><span>${esc(nombreDe(r.flota_id))} · ${esc(r.socio)}<br><small>Salió ${r.fecha !== D.hoy ? fCorta(r.fecha) + ' ' : ''}${r.salida} · vuelta prevista ${r.fin}</small></span><button data-r="${r.id}" data-a="devuelta" data-agua="1">Ha vuelto</button></div>`).join('')}</div>` : '';
+  const act = D.reservas.filter((r) => r.tipo === 'socio' && !['anulada', 'no_vino'].includes(r.estado));
+  const activas = D.flota.filter((p) => p.activa);
+  $('cifras').innerHTML = [[act.length, 'reservas'], [new Set(act.map((r) => r.flota_id)).size + ' / ' + activas.length, 'piraguas con reserva'], [D.enAgua.length, 'en el agua']]
+    .map(([v, t]) => `<div><b>${v}</b><span>${t}</span></div>`).join('');
+  $('barcos').innerHTML = activas.length ? activas.map((p) => {
+    const rs = D.reservas.filter((r) => r.flota_id === p.id).sort((a, b) => a.inicio.localeCompare(b.inicio));
+    return `<div class="aviso barco"><h3><span>${esc(p.nombre)}</span><small>${esc([p.tipo, p.id_material ? 'nº ' + p.id_material : ''].filter(Boolean).join(' · '))}</small></h3>
+      ${p.nota ? `<div class="dato">📝 <span>${esc(p.nota)}</span></div>` : ''}
+      ${rs.length ? rs.map(lineaRes).join('') : '<div class="dato" style="margin-top:6px"><span>Libre todo el día</span></div>'}
+      <div class="acciones"><button data-p="${p.id}" data-a="reservar">+ Reservar</button></div></div>`;
+  }).join('') : '<p class="vacio">No hay piraguas en la flota. Añádelas en la pestaña «Flota».</p>';
+}
+async function cargar() { msg('Cargando…'); try { D = await pir('dia'); pintar(); pintarFlota(); msg(''); } catch (e) { msg(e.message, 'error'); } }
+const moverDia = (n) => { FECHA = sumar(FECHA, n); cargar(); };
+$('ant').onclick = () => moverDia(-1); $('sig').onclick = () => moverDia(1);
+$('hoy').onclick = () => { FECHA = hoyYmd(); cargar(); };
+
+// ---------- Flota ----------
+function pintarFlota() {
+  $('fLista').innerHTML = D.flota.length ? D.flota.map((p) => `<div class="aviso"><div class="cab"><b>${esc(p.nombre)}</b>${p.activa ? '<span class="chip verde" style="margin:0">Disponible</span>' : '<span class="chip gris" style="margin:0">No disponible</span>'}</div>
+    <div class="dato"><span>${esc([p.tipo, p.id_material ? 'nº inventario ' + p.id_material : 'sin nº de inventario'].filter(Boolean).join(' · '))}</span></div>
+    ${p.nota ? `<div class="dato">📝 <span>${esc(p.nota)}</span></div>` : ''}
+    <div class="acciones"><button data-f="${p.id}">Editar</button></div></div>`).join('') : '<p class="vacio">Todavía no hay piraguas.</p>';
+}
+
+// ---------- Diálogos ----------
+let ACCION = null;
+function dialogo(a, titulo, sub, campos, ok, peligro) {
+  ACCION = a; $('dTitulo').textContent = titulo; $('dSub').textContent = sub || ''; $('dCampos').innerHTML = campos;
+  $('dMsg').textContent = ''; $('dMsg').className = 'msg'; $('dOk').textContent = ok || 'Guardar'; $('dOk').className = peligro ? 'peligro' : 'prin'; $('dOk').disabled = false;
+  $('dlg').showModal();
+}
+$('dCancelar').onclick = () => $('dlg').close();
+function dlgReserva(r, flotaId) {
+  const ini = r ? r.inicio : '10:00', dur = r ? min(r.fin) - min(r.inicio) : 90;
+  const tipo = r ? r.tipo : 'socio';
+  dialogo({ op: 'reservar', id: r ? r.id : undefined }, r ? 'Editar reserva' : 'Reservar piragua', '',
+    `<div class="tipo2"><label><input type="radio" name="tipo" value="socio" ${tipo === 'socio' ? 'checked' : ''}>Reserva de socio</label><label><input type="radio" name="tipo" value="bloqueo" ${tipo === 'bloqueo' ? 'checked' : ''}>Bloquear</label></div>
+    <label>Piragua<select name="flota_id">${D.flota.filter((p) => p.activa || (r && p.id === r.flota_id)).map((p) => `<option value="${p.id}" ${p.id === (r ? r.flota_id : flotaId) ? 'selected' : ''}>${esc(p.nombre)}</option>`).join('')}</select></label>
+    <label>Día<input type="date" name="fecha" required value="${esc(r ? r.fecha : FECHA)}"></label><div class="dos"><label>Sale<input type="time" name="inicio" required value="${ini}"></label>
+      <label>Durante<select name="dur">${[60, 90, 120, 180, 240].map((m) => `<option value="${m}" ${m === dur ? 'selected' : ''}>${m < 120 ? m + ' min' : m / 60 + ' h'}</option>`).join('')}${[60, 90, 120, 180, 240].includes(dur) ? '' : `<option value="${dur}" selected>${dur} min</option>`}</select></label></div>
+    <label id="lSocio">${tipo === 'bloqueo' ? 'Motivo' : 'Socio'}<input name="socio" required value="${esc(r ? r.socio : '')}" placeholder="${tipo === 'bloqueo' ? 'Curso de iniciación, reparación…' : 'Nombre y apellidos'}"></label>
+    <label id="lTel" class="${tipo === 'bloqueo' ? 'oculto' : ''}">Teléfono<input name="telefono" type="tel" value="${esc(r && r.telefono || '')}"></label>
+    <label>Nota<input name="nota" value="${esc(r && r.nota || '')}"></label>`);
+}
+$('dlgForm').addEventListener('change', (ev) => {
+  if (ev.target.name !== 'tipo') return;
+  const bloq = ev.target.value === 'bloqueo';
+  $('lSocio').firstChild.textContent = bloq ? 'Motivo' : 'Socio';
+  $('dlgForm').socio.placeholder = bloq ? 'Curso de iniciación, reparación…' : 'Nombre y apellidos';
+  $('lTel').classList.toggle('oculto', bloq);
+});
+$('btnReservar').onclick = () => dlgReserva(null, null);
+const dlgPiragua = (p) => dialogo({ op: 'flota', id: p ? p.id : undefined }, p ? 'Editar piragua' : 'Añadir piragua', '',
+  `<label>Nombre<input name="nombre" required value="${esc(p ? p.nombre : '')}" placeholder="K1 Águila"></label>
+   <div class="dos"><label>Tipo<input name="tipo" value="${esc(p && p.tipo || '')}" placeholder="K1, K2, C1, paddle…"></label><label>Nº de inventario<input name="id_material" value="${esc(p && p.id_material || '')}" placeholder="Opcional"></label></div>
+   <label>Nota<input name="nota" value="${esc(p && p.nota || '')}" placeholder="Para principiantes, pala incluida…"></label>
+   <label class="check"><input type="checkbox" name="activa" ${!p || p.activa ? 'checked' : ''}> Disponible para reservar</label>`);
+$('btnPiragua').onclick = () => dlgPiragua(null);
+$('fLista').addEventListener('click', (ev) => { const b = ev.target.closest('button[data-f]'); if (b) dlgPiragua(D.flota.find((p) => String(p.id) === b.dataset.f)); });
+
+async function cambiarEstado(id, estado) {
+  msg('Guardando…');
+  try { D = await pir('estado', { id, estado }); pintar(); msg({ en_agua: 'Ha salido.', devuelta: 'Ha vuelto.', reservada: 'Hecho.', no_vino: 'Hecho.', anulada: 'Anulada.' }[estado], 'ok'); }
+  catch (e) { msg(e.message, 'error'); }
+}
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('#vDia button[data-a]'); if (!b) return;
+  const a = b.dataset.a;
+  if (a === 'reservar') return dlgReserva(null, Number(b.dataset.p));
+  const r = D.reservas.concat(D.enAgua).find((x) => String(x.id) === b.dataset.r);
+  if (a === 'editar') return dlgReserva(r);
+  if (a === 'anulada' || a === 'no_vino') return dialogo({ op: 'estado', id: r.id, estado: a }, a === 'anulada' ? (r.tipo === 'bloqueo' ? 'Quitar el bloqueo' : 'Anular la reserva') : 'No vino',
+    `${nombreDe(r.flota_id)} · ${r.inicio}–${r.fin} · ${r.socio}`, '', a === 'anulada' ? (r.tipo === 'bloqueo' ? 'Quitar' : 'Anular') : 'Guardar', a === 'anulada');
+  cambiarEstado(r.id, a);
+});
+$('dlgForm').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const f = ev.target, d = Object.assign({}, ACCION);
+  f.querySelectorAll('[name]').forEach((el) => { if (el.type === 'radio') { if (el.checked) d[el.name] = el.value; } else d[el.name] = el.type === 'checkbox' ? el.checked : el.value.trim(); });
+  if (d.dur) { const fin = min(d.inicio) + Number(d.dur); if (fin >= 24 * 60) { $('dMsg').textContent = 'La reserva tiene que acabar el mismo día.'; $('dMsg').className = 'msg error'; return; } d.fin = hora(fin); delete d.dur; }
+  const op = d.op; delete d.op;
+  $('dOk').disabled = true; $('dMsg').textContent = 'Guardando…'; $('dMsg').className = 'msg';
+  try {
+    D = await pir(op, d); pintar(); pintarFlota(); $('dlg').close();
+    msg({ reservar: 'Guardado.', estado: 'Hecho.', flota: 'Piragua guardada.' }[op], 'ok');
+  } catch (e) { $('dMsg').textContent = e.message; $('dMsg').className = 'msg error'; $('dOk').disabled = /confirmar/.test(e.message); }
+});
+
+// ---------- Historial ----------
+$('formBuscar').addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  $('hLista').innerHTML = '<p class="vacio">Buscando…</p>';
+  try {
+    const r = await pir('historial', { buscar: ev.target.buscar.value.trim() });
+    const n = (id) => (r.flota.find((p) => p.id === id) || {}).nombre || '¿?';
+    $('hLista').innerHTML = r.historial.length ? r.historial.map((x) => { const [cl, tx] = EST[x.estado] || ['', x.estado]; return `<div class="aviso">
+      <div class="cab"><b>${esc(n(x.flota_id))}</b><span class="num">${fCorta(x.fecha)} · ${x.inicio}–${x.fin}</span></div>
+      <div class="dato">${x.tipo === 'bloqueo' ? '🚫' : '👤'} <span>${esc(x.socio)}${x.salida ? ' · salió ' + x.salida : ''}${x.entrada ? ' · volvió ' + x.entrada : ''}</span></div>
+      ${x.nota ? `<div class="dato">📝 <span>${esc(x.nota)}</span></div>` : ''}
+      <span class="chip ${x.tipo === 'bloqueo' ? 'gris' : cl}">${x.tipo === 'bloqueo' ? 'Bloqueo' : tx}</span></div>`; }).join('') + (r.historial.length === 100 ? '<p class="nota">Se ven las 100 más recientes.</p>' : '')
+      : '<p class="vacio">No hay reservas con ese texto.</p>';
+  } catch (e) { $('hLista').innerHTML = `<p class="msg error">${esc(e.message)}</p>`; }
+});
+
+$('seg').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#seg button').forEach((x) => x.classList.toggle('on', x === b));
+  $('vDia').classList.toggle('oculto', b.dataset.v !== 'dia'); $('vHist').classList.toggle('oculto', b.dataset.v !== 'hist'); $('vFlota').classList.toggle('oculto', b.dataset.v !== 'flota');
+  if (b.dataset.v === 'hist' && !$('hLista').innerHTML) $('formBuscar').requestSubmit();
+});
+
+(async function () {
+  try { if (!SESION) await entrarConEnlace(); await cargar(); }
+  catch (e) { msg(e.message, 'error'); }
+})();
+</script>
+</body>
+</html>

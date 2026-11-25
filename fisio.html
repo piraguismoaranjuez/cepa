@@ -212,7 +212,7 @@ function dialogo(a, titulo, sub, campos, ok, peligro) {
   $('dlg').showModal();
 }
 $('dCancelar').onclick = () => $('dlg').close();
-const camposCita = (c, conHora) => (conHora ? `<div class="tres"><label>Día<input type="date" name="fecha" required value="${esc(c && c.fecha || hoyYmd())}"></label>
+const camposCita = (c, conHora) => (conHora ? `<label>Día<input type="date" name="fecha" required value="${esc(c && c.fecha || hoyYmd())}"></label><div class="dos">
     <label>Hora<input type="time" name="inicio" required value="${esc(c && c.inicio || '17:00')}"></label><label>Hasta<input type="time" name="fin" value="${esc(c && c.fin || '')}"></label></div>` : '') +
   `<label>Nombre<input name="nombre" required value="${esc(c && c.nombre || '')}" placeholder="Nombre y apellidos"></label>
   <div class="dos"><label>Teléfono<input name="telefono" type="tel" value="${esc(c && c.telefono || '')}"></label><label>Club o grupo<input name="grupo" value="${esc(c && c.grupo || '')}" placeholder="CETD, veteranos…"></label></div>
