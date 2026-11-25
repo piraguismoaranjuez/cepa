@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Entrenamientos · CEPA</title>
+<title>Deportistas · CEPA</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CEPA">
 <link rel="apple-touch-icon" href="icono-180.png">
@@ -127,7 +127,7 @@ async function arrancar(){
 function pintar(){
   const g = S.grupos;
   $('app').innerHTML = `<div class="top">
-      <h1><button class="linkbtn" data-a="salir" style="text-decoration:none;font-size:16px">‹ CEPA</button><span>Entrenamientos</span><span style="width:52px"></span></h1>
+      <h1><button class="linkbtn" data-a="salir" style="text-decoration:none;font-size:16px">‹ CEPA</button><span>Deportistas</span><span style="width:52px"></span></h1>
       ${g.length > 1 ? `<select id="selG">${g.map(x => `<option value="${esc(x.id)}" ${x.id === S.grupo ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select>`
         : g.length ? `<div class="gname">${esc(g[0].nombre)}</div>` : ''}
       <div class="tabs">
