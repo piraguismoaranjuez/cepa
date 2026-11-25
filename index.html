@@ -197,7 +197,7 @@ async function cargar() {
   const club = d.herramientas || [];
   $('sinModulos').classList.toggle('oculto', trabajador || club.length > 0);
   $('bloqueClub').classList.toggle('oculto', !club.length);
-  $('modulosClub').innerHTML = club.map((x) => `<a class="mod ancho" href="${esc(x.url || '#')}"><svg viewBox="0 0 24 24">${x.icono || '<rect x="4" y="4" width="16" height="16" rx="3"/>'}</svg>
+  $('modulosClub').innerHTML = club.map((x) => `<a class="mod ancho" href="${esc(x.url || '#')}"${/^https?:/.test(x.url || '') ? ' target="_blank" rel="noopener"' : ''}><svg viewBox="0 0 24 24">${x.icono || '<rect x="4" y="4" width="16" height="16" rx="3"/>'}</svg>
     <div><b>${esc(x.nombre)}</b><span>${esc(x.descripcion || '')}</span></div></a>`).join('');
   pintarTurnos(d.turnos || []);
   pintarAnuncios(d.anuncios || [], d.anunciosSinLeer);
