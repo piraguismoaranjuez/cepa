@@ -42,12 +42,22 @@
   .chip.pend { background: #f6e8cf; color: #8a5a12; } .chip.desc { background: #eee; color: #888; }
   .vacio { text-align: center; color: var(--suave); padding: 30px 10px; }
   .oculto { display: none !important; }
+  .seg.tres { grid-template-columns: 1fr 1fr 1fr; }
+  h2 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--suave); margin: 18px 2px 8px; }
+  .buscar { display: flex; gap: 6px; margin-bottom: 10px; }
+  .buscar button { border: 0; background: var(--azul); color: #fff; font: inherit; font-weight: 650; border-radius: 12px; padding: 0 16px; }
+  .filtros { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filtros button { border: 1px solid var(--linea); background: #fff; font: inherit; font-size: 14px; border-radius: 99px; padding: 5px 12px; color: var(--suave); }
+  .filtros button.on { background: var(--azul); border-color: var(--azul); color: #fff; }
+  .aviso .cab { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .aviso .cab small { color: var(--suave); font-size: 13px; white-space: nowrap; }
+  .aviso span.chip { display: inline-block; margin-right: 4px; }
 </style>
 </head>
 <body>
 <header><a href="index.html">‹ CEPA</a><b>Reparaciones</b></header>
 <main>
-  <div class="seg"><button class="on" data-v="nuevo">Avisar de una avería</button><button data-v="mios">Mis avisos</button></div>
+  <div class="seg" id="seg"><button class="on" data-v="nuevo">Avisar</button><button data-v="mios">Consultar</button><button data-v="taller" class="oculto">Taller</button></div>
 
   <section id="vNuevo">
     <div class="caja">
@@ -58,7 +68,14 @@
     </div>
   </section>
 
-  <section id="vMios" class="oculto"><div id="listaAvisos"></div></section>
+  <section id="vMios" class="oculto">
+    <h2>Tus avisos</h2>
+    <div id="listaAvisos"></div>
+    <h2>Todas las piraguas</h2>
+    <form class="buscar" id="formBuscar"><input name="buscar" type="search" placeholder="Piragua o persona…"><button>Buscar</button></form>
+    <div class="filtros" id="filtros"><button class="on" data-f="">Todas</button><button data-f="curso">Sin terminar</button><button data-f="hecho">Reparadas</button><button data-f="desc">Descartadas</button></div>
+    <div id="listaTodas"><p class="vacio">Cargando…</p></div>
+  </section>
   <datalist id="barcos"></datalist>
 </main>
 
@@ -148,15 +165,47 @@ $('formRep').addEventListener('submit', async (ev) => {
   } catch (e) { msg.textContent = e.message; msg.className = 'msg error'; }
   finally { $('btnEnviar').disabled = false; }
 });
+// ---------- Consultar: el estado de todas las piraguas ----------
+let TODAS = [], FILTRO = '', CARGADAS = false;
+const grupoEstado = (e) => ({ Hecho: 'hecho', Descartado: 'desc' }[e] || 'curso');
+function pintarTodas() {
+  const l = TODAS.filter((x) => !FILTRO || grupoEstado(x.estado) === FILTRO);
+  $('listaTodas').innerHTML = l.length ? l.map((x) => `<div class="aviso">
+    <div class="cab"><b>${esc(x.piragua || '')}</b><small>${esc(x.aviso || '')}</small></div>
+    <span>${esc(x.obs || '')}</span>
+    <span>Avisó ${esc(x.nombre || '—')}${x.entregaTxt && x.estado === 'Esperando la piragua' ? ' · llevarla el ' + esc(x.entregaTxt) : ''}${x.previstaTxt && !['Hecho', 'Descartado'].includes(x.estado) ? ' · prevista ' + esc(x.previstaTxt) : ''}${x.reparadaTxt || x.reparada ? ' · reparada ' + esc(x.reparadaTxt || x.reparada) : ''}</span>
+    ${x.com ? `<span>💬 ${esc(x.com)}</span>` : ''}
+    <span class="chip ${claseEstado(x.estado)}">${esc(x.estado)}</span>${x.tipo ? `<span class="chip">${esc(x.tipo)}</span>` : ''}</div>`).join('')
+    : '<p class="vacio">No hay ninguna con ese filtro.</p>';
+}
+async function buscarTodas(texto) {
+  $('listaTodas').innerHTML = '<p class="vacio">Buscando…</p>';
+  try {
+    const r = await api('reparaciones', { op: 'historial', buscar: texto || '' });
+    TODAS = r.datos || []; CARGADAS = true; pintarTodas();
+    if (r.total > TODAS.length) $('listaTodas').insertAdjacentHTML('afterbegin', `<p class="intro">Se ven las ${TODAS.length} más recientes de ${r.total}. Busca una piragua o persona para afinar.</p>`);
+  } catch (e) { $('listaTodas').innerHTML = `<p class="msg error">${esc(e.message)}</p>`; }
+}
+$('formBuscar').addEventListener('submit', (ev) => { ev.preventDefault(); buscarTodas(ev.target.buscar.value.trim()); });
+$('filtros').addEventListener('click', (ev) => {
+  const b = ev.target.closest('button'); if (!b) return; FILTRO = b.dataset.f;
+  document.querySelectorAll('#filtros button').forEach((x) => x.classList.toggle('on', x === b)); pintarTodas();
+});
+
 document.querySelector('.seg').addEventListener('click', (ev) => {
   const b = ev.target.closest('button'); if (!b) return;
+  if (b.dataset.v === 'taller') { location.href = 'taller.html'; return; }
+  if (b.dataset.v === 'mios' && !CARGADAS) buscarTodas('');
   document.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
   $('vNuevo').classList.toggle('oculto', b.dataset.v !== 'nuevo'); $('vMios').classList.toggle('oculto', b.dataset.v !== 'mios');
 });
 (async function () {
   try {
     if (!SESION) await entrarConEnlace();
-    pintarFormulario(await api('formularioReparacion'));
+    const d = await api('formularioReparacion');
+    pintarFormulario(d);
+    if (d.taller) { document.querySelector('#seg [data-v=taller]').classList.remove('oculto'); $('seg').classList.add('tres'); }
+    if (location.hash === '#consultar') document.querySelector('#seg [data-v=mios]').click();
   } catch (e) { $('preguntas').innerHTML = `<p class="msg error">${esc(e.message)}</p>`; }
 })();
 </script>
