@@ -53,6 +53,7 @@
   .linea div { height: 100%; background: var(--verde); border-radius: 99px; width: 0; transition: width .4s; }
   .horasLinea { display: flex; justify-content: space-between; font-size: 13px; color: #b9c1d1; margin-top: 8px; font-variant-numeric: tabular-nums; }
   .avisoF { font-size: 14px; margin-top: 12px; color: #ffd27a; min-height: 0; }
+  .turnoHoy { font-size: 14px; margin-top: 4px; opacity: .85; }
 
   /* Hoja blanca */
   .hoja { background: var(--blanco); border-radius: 26px 26px 0 0; padding: 62px 20px calc(40px + env(safe-area-inset-bottom)); min-height: 60vh; position: relative; z-index: 1; }
@@ -166,6 +167,7 @@
     <h1>Mi zona</h1>
     <div class="fichaje" id="tarjetaFichaje">
       <div class="estadoF" id="estadoF">Cargando…</div>
+      <div class="turnoHoy oculto" id="turnoHoy"></div>
       <div class="filaF">
         <div class="contador"><span id="contador">0h 00m 00s</span><i class="punto oculto" id="puntoF"></i></div>
         <div class="botonesF" id="botonesF"></div>
@@ -317,6 +319,16 @@
   <div class="acciones"><button class="bAzul" id="btnAusencia">Enviar solicitud</button><button class="bLinea" style="margin:0" id="btnCerrar">Cancelar</button></div>
 </div></div>
 
+<div class="modal oculto" id="modalFuera"><div class="sheet">
+  <h2>Estás fuera de tu turno</h2>
+  <p id="fueraTexto" style="margin:0 0 6px;line-height:1.45"></p>
+  <label>¿Por qué fichas ahora? (obligatorio)</label>
+  <textarea id="fueraMotivo" rows="3" maxlength="500" placeholder="Ej.: me quedo a terminar la clase, cubro a un compañero, me lo ha pedido el club…"></textarea>
+  <div class="msg" id="msgFuera"></div>
+  <div class="acciones"><button class="bAzul" id="btnFuera">Fichar con este motivo</button><button class="bLinea" style="margin:0" id="btnFueraCancelar">No fichar</button></div>
+  <p class="nota">Se guarda la hora real a la que fichas. El club verá el motivo.</p>
+</div></div>
+
 <div class="toast oculto" id="toast"></div>
 
 <script>
@@ -448,18 +460,42 @@ function ubicacion() {
       () => ok(null), { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
 }
+// Si ficha la entrada o la salida fuera de su turno, se le pide el motivo (el fichaje no se impide)
+function pedirMotivo(tipo, turnos) {
+  return new Promise((ok) => {
+    $('fueraTexto').textContent = (turnos ? `Tu turno de hoy es ${turnos}.` : 'Hoy no tienes turno.') +
+      ` Puedes fichar la ${tipo === 'salida' ? 'salida' : 'entrada'} igualmente, pero tienes que explicar el motivo.`;
+    $('fueraMotivo').value = ''; $('msgFuera').textContent = ''; $('msgFuera').className = 'msg';
+    $('modalFuera').classList.remove('oculto'); setTimeout(() => $('fueraMotivo').focus(), 50);
+    const cerrar = (v) => { $('modalFuera').classList.add('oculto'); $('btnFuera').onclick = $('btnFueraCancelar').onclick = null; ok(v); };
+    $('btnFuera').onclick = () => {
+      const m = $('fueraMotivo').value.trim();
+      if (m.length < 5) { $('msgFuera').className = 'msg error'; $('msgFuera').textContent = 'Escribe el motivo (al menos 5 letras).'; return; }
+      cerrar(m);
+    };
+    $('btnFueraCancelar').onclick = () => cerrar(null);
+  });
+}
 async function fichar(tipo) {
   if (tipo === 'salida' && !confirm('¿Terminar tu jornada de hoy?')) return;
   document.querySelectorAll('[data-fichar], #bFichar').forEach((b) => (b.disabled = true));
   $('avisoF').textContent = 'Registrando…';
   const ub = await ubicacion();
   try {
-    const r = await rpc('fichar_enlace', { p_token: TOKEN, p_tipo: tipo,
-      p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null });
+    const datos = { p_token: TOKEN, p_tipo: tipo,
+      p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null };
+    let r = await rpc('fichar_enlace', datos);
+    if (!r.ok && r.fuera_turno) {
+      $('avisoF').textContent = '';
+      const motivo = await pedirMotivo(tipo, r.turnos);
+      if (!motivo) throw Object.assign(new Error('No has fichado.'), { cancelado: true });
+      $('avisoF').textContent = 'Registrando…';
+      r = await rpc('fichar_enlace', Object.assign({ p_motivo: motivo }, datos));
+    }
     if (!r.ok) throw new Error(r.error);
     $('avisoF').textContent = ub ? '' : 'Registrado sin ubicación: revisa el permiso de ubicación del navegador.';
     toast({ entrada: 'Entrada', inicio_pausa: 'Pausa', fin_pausa: 'Vuelta de la pausa', salida: 'Salida' }[tipo] + ' registrada a las ' + fmtHora(r.momento));
-  } catch (e) { $('avisoF').textContent = e.message + '. No se ha registrado: vuelve a intentarlo.'; }
+  } catch (e) { $('avisoF').textContent = e.cancelado ? e.message : e.message + '. No se ha registrado: vuelve a intentarlo.'; }
   await cargarHoy().catch(() => {});
   document.querySelectorAll('[data-fichar], #bFichar').forEach((b) => (b.disabled = false));
   if (tipo === 'salida') cargarResumen().catch(() => {});
@@ -539,6 +575,9 @@ function pintarTodo() {
   $('listaDocs').innerHTML = otros.length ? otros.map(fila).join('') : '<li class="vacio">Todavía no tienes documentos.</li>';
   // Turnos planificados
   const tur = d.turnos || [];
+  const deHoy = tur.filter((t) => t.fecha === hoyYmd() && t.inicio);
+  $('turnoHoy').classList.toggle('oculto', !deHoy.length);
+  $('turnoHoy').textContent = deHoy.length ? 'Tu turno de hoy: ' + deHoy.map((t) => t.inicio + '–' + t.fin).join(' y ') : '';
   $('cajaTurnos').classList.toggle('oculto', !tur.length);
   $('listaTurnosMZ').innerHTML = tur.map((t) => `<li><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${esc(t.color)};margin-right:6px"></span><b style="font-weight:600">${esc(t.nombre)}</b>
       <span class="sub">${fechaLarga(t.fecha)}${t.nota ? ' · ' + esc(t.nota) : ''}</span></span><span class="dcha">${t.inicio ? esc(t.inicio + '–' + t.fin) : esc(t.horas + ' h')}</span></li>`).join('');
