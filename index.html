@@ -46,6 +46,12 @@
   .pie { text-align: center; margin-top: 30px; }
   .pie a { color: var(--suave); font-size: 14px; }
   .oculto { display: none !important; }
+  button.sec { background: #fff; color: var(--azul); border: 1px solid var(--linea); margin-top: 10px; }
+  .alta b.tit { display: block; font-size: 18px; margin-bottom: 6px; }
+  .alta p { margin: 0 0 12px; color: var(--suave); font-size: 15px; }
+  .alta .pasos { margin: 4px 0 14px; padding-left: 22px; font-size: 15px; }
+  .alta .pasos li { margin-bottom: 6px; }
+  .ok { color: var(--verde); }
   .anuncio { display: block; background: #fff; border: 1px solid var(--linea); border-radius: 16px; overflow: hidden; margin-bottom: 12px; color: inherit; text-decoration: none; position: relative; }
   .anuncio img { width: 100%; max-height: 170px; object-fit: cover; display: block; }
   .anuncio div { padding: 14px 16px; }
@@ -75,6 +81,33 @@
   <h1 id="saludo">CEPA</h1>
   <div class="sub" id="subtitulo"></div>
   <div class="aviso error" id="fatal"></div>
+
+  <!-- Activar este móvil: enlace personal + código por correo -->
+  <section id="alta" class="oculto alta">
+    <div class="caja" id="altaInstalar">
+      <b class="tit">Primero, instala CEPA en tu iPhone</b>
+      <ol class="pasos">
+        <li>Pulsa el botón <b>Compartir</b> de Safari (el cuadrado con la flecha hacia arriba).</li>
+        <li>Elige <b>Añadir a pantalla de inicio</b> y pulsa <b>Añadir</b>.</li>
+        <li>Cierra Safari y abre <b>CEPA</b> desde el icono nuevo. Allí te pediremos el código.</li>
+      </ol>
+      <p>Si activas CEPA aquí en Safari, tendrás que repetirlo luego en el icono.</p>
+      <button class="sec" id="altaAqui">Seguir en Safari de todas formas</button>
+    </div>
+    <div class="caja" id="altaPaso1">
+      <b class="tit">Activa este móvil</b>
+      <p>Por seguridad, te enviaremos un código a tu correo. Solo se hace una vez en cada móvil.</p>
+      <button id="btnCodigo">Enviarme el código</button>
+    </div>
+    <div class="caja oculto" id="altaPaso2">
+      <b class="tit">Escribe el código</b>
+      <p>Te hemos enviado un código de 6 cifras a <b id="altaCorreo"></b>. Si no lo ves, mira en «Spam» o «Promociones».</p>
+      <input class="pin" id="altaCodigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="••••••" aria-label="Código de 6 cifras">
+      <button id="btnEntrar">Entrar</button>
+      <div class="pie"><a href="#" id="reenviar">No me ha llegado: enviar otro</a></div>
+    </div>
+    <div class="aviso" id="altaAviso"></div>
+  </section>
 
   <!-- Inicio -->
   <section id="inicio" class="oculto">
@@ -134,7 +167,8 @@ const guardado = {
   leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
 };
-// El enlace personal (#t=…) se guarda y se deja en la dirección para «Añadir a pantalla de inicio»
+// El enlace personal (#t=…) se guarda y se deja en la dirección para «Añadir a pantalla de inicio».
+// Por sí solo no da acceso: sirve para pedir el código por correo que activa cada móvil.
 const TOKEN = (() => {
   const m = location.hash.match(/t=([a-f0-9]{48})/i);
   if (m) { guardado.poner('fichar_token', m[1]); return m[1]; }
@@ -149,7 +183,7 @@ async function api(accion, datos) {
   if (!r.ok) throw new Error('No se ha podido conectar con el club');
   const j = await r.json();
   if (!j.ok) {
-    if (j.error === 'SESION' && accion !== 'entrar') { SESION = null; guardado.poner('mizona_sesion', null); await entrarConEnlace(); return api(accion, datos); }
+    if (j.error === 'SESION' && accion !== 'entrar') { pedirAlta('Tienes que volver a activar este móvil.'); throw new Error(''); }
     throw new Error(j.error);
   }
   return j;
@@ -162,19 +196,76 @@ async function rpc(nombre, datos) {
   return r.json();
 }
 
-// Sin PIN: con el enlace personal se abre la sesión directamente
-async function entrarConEnlace() {
-  const r = await api('entrar', { token: TOKEN });
-  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+// ---------- Activar este móvil ----------
+const esIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const instalada = () => !!(window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches);
+// Nombre que verá el club en el panel («iPhone · app instalada», «Android (SM-A536B) · Chrome»…)
+function nombreDispositivo() {
+  const ua = navigator.userAgent;
+  const so = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) || (esIOS && /Mac/.test(ua)) ? 'iPad' : /Android/.test(ua) ? 'Android'
+    : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : 'Otro';
+  const m = ua.match(/Android [\d.]+; ([^;)]+)/), modelo = m && m[1].trim() !== 'K' ? ' (' + m[1].trim().slice(0, 24) + ')' : '';
+  const nav = instalada() ? 'app instalada' : /Edg/.test(ua) ? 'Edge' : /Firefox|FxiOS/.test(ua) ? 'Firefox'
+    : /CriOS|Chrome/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : 'navegador';
+  return so + modelo + ' · ' + nav;
 }
+function avisoAlta(t, error) { $('altaAviso').textContent = t || ''; $('altaAviso').className = 'aviso' + (error ? ' error' : t ? ' ok' : ''); }
+function pedirAlta(motivo) {
+  SESION = null; guardado.poner('mizona_sesion', null);
+  $('inicio').classList.add('oculto'); $('alta').classList.remove('oculto');
+  $('saludo').textContent = 'Bienvenido a CEPA'; $('subtitulo').textContent = 'Club Escuela de Piragüismo Aranjuez';
+  if (!TOKEN) {
+    ['altaInstalar', 'altaPaso1', 'altaPaso2'].forEach((x) => $(x).classList.add('oculto'));
+    return avisoAlta('Para activar este móvil, abre el enlace personal que te envió el club.', true);
+  }
+  // En iPhone la app de la pantalla de inicio guarda sus datos aparte de Safari: mejor activarla allí
+  const instalarAntes = esIOS && !instalada() && !guardado.leer('alta_en_safari');
+  $('altaInstalar').classList.toggle('oculto', !instalarAntes);
+  $('altaPaso1').classList.toggle('oculto', instalarAntes);
+  $('altaPaso2').classList.add('oculto');
+  avisoAlta(motivo || '', !!motivo);
+}
+$('altaAqui').addEventListener('click', () => {
+  guardado.poner('alta_en_safari', '1');
+  $('altaInstalar').classList.add('oculto'); $('altaPaso1').classList.remove('oculto');
+});
+async function enviarCodigo(boton) {
+  boton.disabled = true; avisoAlta('Enviando el código…');
+  try {
+    const r = await api('entrar', { token: TOKEN });
+    $('altaCorreo').textContent = r.email;
+    $('altaPaso1').classList.add('oculto'); $('altaPaso2').classList.remove('oculto');
+    $('altaCodigo').value = ''; $('altaCodigo').focus();
+    avisoAlta(r.yaEnviado ? 'Te lo acabamos de enviar: mira tu correo. Puedes pedir otro dentro de un minuto.' : '');
+  } catch (e) { avisoAlta(e.message, true); }
+  finally { boton.disabled = false; }
+}
+$('btnCodigo').addEventListener('click', () => enviarCodigo($('btnCodigo')));
+$('reenviar').addEventListener('click', (ev) => { ev.preventDefault(); enviarCodigo($('btnEntrar')); });
+async function comprobarCodigo() {
+  const c = $('altaCodigo').value.replace(/\D/g, '');
+  if (c.length !== 6) return avisoAlta('Escribe las 6 cifras del código.', true);
+  $('btnEntrar').disabled = true; avisoAlta('Comprobando…');
+  try {
+    const r = await api('entrar', { token: TOKEN, codigo: c, dispositivo: nombreDispositivo() });
+    SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+    $('alta').classList.add('oculto'); avisoAlta('');
+    arrancar();
+  } catch (e) { avisoAlta(e.message, true); $('altaCodigo').select(); }
+  finally { $('btnEntrar').disabled = false; }
+}
+$('btnEntrar').addEventListener('click', comprobarCodigo);
+$('altaCodigo').addEventListener('input', () => {
+  const v = $('altaCodigo').value.replace(/\D/g, '').slice(0, 6);
+  if (v !== $('altaCodigo').value) $('altaCodigo').value = v;
+  if (v.length === 6 && !$('btnEntrar').disabled) comprobarCodigo();
+});
 
 $('salir').addEventListener('click', async (ev) => {
   ev.preventDefault();
-  if (!confirm('¿Cerrar la sesión en este móvil? Para volver a entrar tendrás que abrir de nuevo tu enlace personal.')) return;
+  if (!confirm('¿Cerrar la sesión en este móvil? Para volver a entrar te pediremos otro código por correo.')) return;
   try { await api('salir'); } catch (e) {}
-  SESION = null; guardado.poner('mizona_sesion', null);
-  guardado.poner('fichar_token', null);
-  location.href = location.pathname;
+  pedirAlta();
 });
 
 function pintarReloj() { $('reloj').textContent = new Date().toLocaleTimeString('es-ES', { ...zona, hour: '2-digit', minute: '2-digit' }); }
@@ -182,8 +273,8 @@ setInterval(pintarReloj, 1000); pintarReloj();
 
 async function cargarFichaje() {
   try {
-    const d = await rpc('consultar_estado', { p_token: TOKEN });
-    if (!d.ok) return;
+    const d = await rpc('consultar_estado_sesion', { p_sesion: SESION });
+    if (!d.ok) { if (d.error === 'SESION') pedirAlta('Tienes que volver a activar este móvil.'); return; }
     const u = (d.hoy || []).slice(-1)[0];
     $('estadoFichaje').innerHTML = !u ? 'Todavía no has fichado hoy.'
       : u.tipo === 'salida' ? `Jornada cerrada a las <b>${hora(u.momento)}</b>.`
@@ -211,8 +302,7 @@ async function cargar() {
   pintarTurnos(d.turnos || []);
   pintarPublicos(d.publicos || []);
   pintarAnuncios(d.anuncios || [], d.anunciosSinLeer);
-  const instalada = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  $('consejo').classList.toggle('oculto', !!instalada);
+  $('consejo').classList.toggle('oculto', instalada());
 }
 
 const DIAS_S = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
@@ -254,17 +344,12 @@ $('masAnuncios').addEventListener('click', async (ev) => {
   try { const r = await api('anuncios'); $('listaAnuncios').innerHTML = r.anuncios.map(tarjetaAnuncio).join(''); $('masAnuncios').classList.add('oculto'); } catch (e) {}
 });
 
-(async function () {
-  if (!TOKEN) {
-    $('fatal').textContent = 'Abre CEPA desde el enlace personal que te ha enviado el club.';
-    return;
-  }
+async function arrancar() {
+  $('fatal').textContent = '';
   cargarFichaje();
-  try {
-    if (!SESION) await entrarConEnlace();
-    await cargar();
-  } catch (e) { $('fatal').textContent = e.message; }
-})();
+  try { await cargar(); } catch (e) { if (e.message) $('fatal').textContent = e.message; }
+}
+if (SESION) arrancar(); else pedirAlta();
 window.addEventListener('pageshow', (e) => { if (e.persisted && SESION) { cargar().catch(() => {}); cargarFichaje(); } });
 </script>
 </body>

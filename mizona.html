@@ -353,11 +353,8 @@ const guardado = {
   leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
 };
-const TOKEN = (() => {
-  const m = location.hash.match(/t=([a-f0-9]{48})/i);
-  if (m) { guardado.poner('fichar_token', m[1]); return m[1]; }
-  return guardado.leer('fichar_token');
-})();
+// Si alguien abre Mi zona con el enlace personal, se guarda para poder activar el móvil en el inicio
+(() => { const m = location.hash.match(/t=([a-f0-9]{48})/i); if (m) guardado.poner('fichar_token', m[1]); })();
 let SESION = guardado.leer('mizona_sesion');
 let DATOS = null, HOY = [], MES = null;
 
@@ -381,9 +378,11 @@ async function api(accion, datos) {
   }
   return j;
 }
-async function entrar() {
-  const r = await api('entrar', { token: TOKEN });
-  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+// Sin sesión válida: al inicio de CEPA, que activa el móvil con el código por correo
+function entrar() {
+  guardado.poner('mizona_sesion', null);
+  location.replace('index.html');
+  return new Promise(() => {});
 }
 async function cargarResumen() { DATOS = await api('resumen'); pintarTodo(); }
 
@@ -454,8 +453,8 @@ function pintarFichaje() {
 setInterval(() => { if (HOY.length) pintarFichaje(); }, 1000);
 
 async function cargarHoy() {
-  const d = await rpc('consultar_estado', { p_token: TOKEN });
-  if (!d.ok) throw new Error(d.error);
+  const d = await rpc('consultar_estado_sesion', { p_sesion: SESION });
+  if (!d.ok) { if (d.error === 'SESION') return entrar(); throw new Error(d.error); }
   HOY = d.hoy || [];
   pintarFichaje();
 }
@@ -490,15 +489,16 @@ async function fichar(tipo) {
   $('avisoF').textContent = 'Registrando…';
   const ub = await ubicacion();
   try {
-    const datos = { p_token: TOKEN, p_tipo: tipo,
+    const datos = { p_sesion: SESION, p_tipo: tipo,
       p_lat: ub ? ub.lat : null, p_lon: ub ? ub.lon : null, p_precision: ub ? ub.precision : null };
-    let r = await rpc('fichar_enlace', datos);
+    let r = await rpc('fichar_sesion', datos);
+    if (!r.ok && r.error === 'SESION') return entrar();
     if (!r.ok && r.fuera_turno) {
       $('avisoF').textContent = '';
       const motivo = await pedirMotivo(tipo, r.turnos);
       if (!motivo) throw Object.assign(new Error('No has fichado.'), { cancelado: true });
       $('avisoF').textContent = 'Registrando…';
-      r = await rpc('fichar_enlace', Object.assign({ p_motivo: motivo }, datos));
+      r = await rpc('fichar_sesion', Object.assign({ p_motivo: motivo }, datos));
     }
     if (!r.ok) throw new Error(r.error);
     $('avisoF').textContent = ub ? '' : 'Registrado sin ubicación: revisa el permiso de ubicación del navegador.';
@@ -770,12 +770,9 @@ $('btnGasto').addEventListener('click', async () => {
 (async function () {
   if (location.hash.match(/t=/)) history.replaceState(null, '', location.pathname);
   mostrar();
-  if (!TOKEN) { $('estadoF').textContent = 'Abre CEPA desde el enlace personal que te ha enviado el club.'; return; }
+  if (!SESION) return entrar();
   cargarHoy().catch((e) => { $('estadoF').textContent = e.message; });
-  try {
-    if (!SESION) await entrar();
-    await cargarResumen();
-  } catch (e) { toast(e.message); }
+  try { await cargarResumen(); } catch (e) { toast(e.message); }
 })();
 window.addEventListener('pageshow', (e) => { if (e.persisted) { cargarHoy().catch(() => {}); cargarResumen().catch(() => {}); } });
 

@@ -105,12 +105,12 @@ const guardado = {
   leer(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   poner(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
 };
-const TOKEN = guardado.leer('fichar_token');
 let SESION = guardado.leer('mizona_sesion');
-async function entrarConEnlace() {
-  if (!TOKEN) throw new Error('Abre CEPA desde tu enlace personal.');
-  const r = await api('entrar', { token: TOKEN });
-  SESION = r.sesion; guardado.poner('mizona_sesion', SESION);
+// Sin sesión válida: se vuelve al inicio de CEPA, que activa el móvil con el código por correo
+function entrarConEnlace() {
+  guardado.poner('mizona_sesion', null);
+  location.replace('index.html');
+  return new Promise(() => {});
 }
 async function api(accion, datos) {
   const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ accion, sesion: SESION }, datos || {})) });
