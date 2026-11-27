@@ -54,6 +54,9 @@
   .horasLinea { display: flex; justify-content: space-between; font-size: 13px; color: #b9c1d1; margin-top: 8px; font-variant-numeric: tabular-nums; }
   .avisoF { font-size: 14px; margin-top: 12px; color: #ffd27a; min-height: 0; }
   .turnoHoy { font-size: 14px; margin-top: 4px; opacity: .85; }
+  .motivosRap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .motivosRap button { font: inherit; font-size: 13.5px; border: 1px solid var(--linea); background: #f6f8fb; color: var(--tinta); border-radius: 99px; padding: 6px 11px; cursor: pointer; }
+  .motivosRap button:active { background: #e6eefb; }
 
   /* Hoja blanca */
   .hoja { background: var(--blanco); border-radius: 26px 26px 0 0; padding: 62px 20px calc(40px + env(safe-area-inset-bottom)); min-height: 60vh; position: relative; z-index: 1; }
@@ -323,6 +326,10 @@
   <h2>Estás fuera de tu turno</h2>
   <p id="fueraTexto" style="margin:0 0 6px;line-height:1.45"></p>
   <label>¿Por qué fichas ahora? (obligatorio)</label>
+  <div class="motivosRap" id="motivosRap">
+    <button type="button">Planificación de entrenamientos</button><button type="button">Competición o viaje</button>
+    <button type="button">Me quedo a terminar la sesión</button><button type="button">Cubro a un compañero</button><button type="button">Me lo ha pedido el club</button>
+  </div>
   <textarea id="fueraMotivo" rows="3" maxlength="500" placeholder="Ej.: me quedo a terminar la clase, cubro a un compañero, me lo ha pedido el club…"></textarea>
   <div class="msg" id="msgFuera"></div>
   <div class="acciones"><button class="bAzul" id="btnFuera">Fichar con este motivo</button><button class="bLinea" style="margin:0" id="btnFueraCancelar">No fichar</button></div>
@@ -476,6 +483,7 @@ function pedirMotivo(tipo, turnos) {
     $('btnFueraCancelar').onclick = () => cerrar(null);
   });
 }
+$('motivosRap').addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (b) { $('fueraMotivo').value = b.textContent; $('fueraMotivo').focus(); } });
 async function fichar(tipo) {
   if (tipo === 'salida' && !confirm('¿Terminar tu jornada de hoy?')) return;
   document.querySelectorAll('[data-fichar], #bFichar').forEach((b) => (b.disabled = true));
@@ -575,9 +583,9 @@ function pintarTodo() {
   $('listaDocs').innerHTML = otros.length ? otros.map(fila).join('') : '<li class="vacio">Todavía no tienes documentos.</li>';
   // Turnos planificados
   const tur = d.turnos || [];
-  const deHoy = tur.filter((t) => t.fecha === hoyYmd() && t.inicio);
+  const deHoy = tur.filter((t) => t.fecha === hoyYmd());
   $('turnoHoy').classList.toggle('oculto', !deHoy.length);
-  $('turnoHoy').textContent = deHoy.length ? 'Tu turno de hoy: ' + deHoy.map((t) => t.inicio + '–' + t.fin).join(' y ') : '';
+  $('turnoHoy').textContent = deHoy.length ? 'Tu turno de hoy: ' + deHoy.map((t) => t.inicio ? t.inicio + '–' + t.fin : t.nombre + ' (' + String(t.horas).replace('.', ',') + ' h)').join(' y ') : '';
   $('cajaTurnos').classList.toggle('oculto', !tur.length);
   $('listaTurnosMZ').innerHTML = tur.map((t) => `<li><span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${esc(t.color)};margin-right:6px"></span><b style="font-weight:600">${esc(t.nombre)}</b>
       <span class="sub">${fechaLarga(t.fecha)}${t.nota ? ' · ' + esc(t.nota) : ''}</span></span><span class="dcha">${t.inicio ? esc(t.inicio + '–' + t.fin) : esc(t.horas + ' h')}</span></li>`).join('');
